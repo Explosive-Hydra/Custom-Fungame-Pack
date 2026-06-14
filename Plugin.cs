@@ -147,7 +147,7 @@ public class Plugin : BaseUnityPlugin
                         "11                                                                                                                                    11",
                         "11                                                                                                                                    11",
                         "11 s                                                                                                                                  11",
-                        "11                     l                                                                                                     jjjjjjjjj11",
+                        "11                     l                                              7   8   9                                              jjjjjjjjj11",
                         "1122222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222211",
                         "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                     ],
@@ -163,7 +163,10 @@ public class Plugin : BaseUnityPlugin
                         { "p", "spikestabber" },
                         { "g", "geyser" },
                         { "i", "lifepodpump" },
-                        { "b", "beartrap" }
+                        { "b", "beartrap" },
+                        { "9", "trader1" },
+                        { "8", "trader2" },
+                        { "7", "trader3" }
                     }
                 },
                 Items =
@@ -175,7 +178,7 @@ public class Plugin : BaseUnityPlugin
                     },
                     new ItemData
                     {
-                        Id = Items._9MmRound,
+                        Id = Items.GravBag,
                         Slot = Slots.Mouth
                     },
                     new ItemData

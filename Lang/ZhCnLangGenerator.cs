@@ -10,7 +10,7 @@ namespace CustomFungamePack.Lang
         {
             // Config
             Add("config.more_logs.name", "更多日志");
-            Add("config.more_logs.description", "显示更多日日志");
+            Add("config.more_logs.description", "显示更多日志");
             Add("config.start_game_use_fungame.name", "开始游戏使用 Fungame");
             Add("config.start_game_use_fungame.description", "开启新游戏时使用选中的 Fungame");
             Add("config.first_use_fungame.name", "首选 Fungame");

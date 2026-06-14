@@ -11,7 +11,11 @@ public class SkillsPatch
     [HarmonyPostfix]
     private static void SetupPostfix(Skills __instance)
     {
-        var xpData = FungameCheck.CurrentFungame.XpData;
+        var currentFungame = FungameCheck.CurrentFungame;
+        if (currentFungame?.XpData == null)
+            return;
+
+        var xpData = currentFungame.XpData;
 
         __instance.INT = xpData.IntXp;
         __instance.RES = xpData.ResXp;
