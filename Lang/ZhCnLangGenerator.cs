@@ -9,14 +9,14 @@ namespace CustomFungamePack.Lang
         protected override void BuildLocaleData()
         {
             // Config
-            Add("config.more_logs.name", "更多日志");
-            Add("config.more_logs.description", "显示更多日志");
-            Add("config.start_game_use_fungame.name", "开始游戏使用 Fungame");
-            Add("config.start_game_use_fungame.description", "开启新游戏时使用选中的 Fungame");
-            Add("config.first_use_fungame.name", "首选 Fungame");
-            Add("config.first_use_fungame.description", "开始新游戏时使用的 Fungame ID。需要启用\"开始游戏使用 Fungame\"");
-            Add("config.progress_update_interval.name", "进度更新间隔");
-            Add("config.progress_update_interval.description", "放置方块时每 N 个方块更新一次进度显示。数值越小更新越频繁，但可能影响生成性能。");
+            Add("config.general.more_logs.name", "更多日志");
+            Add("config.general.more_logs.description", "显示更多日志");
+            Add("config.general.start_game_use_fungame.name", "开始游戏使用 Fungame");
+            Add("config.general.start_game_use_fungame.description", "开启新游戏时使用选中的 Fungame");
+            Add("config.general.first_use_fungame.name", "首选 Fungame");
+            Add("config.general.first_use_fungame.description", "开始新游戏时使用的 Fungame ID。需要启用\"开始游戏使用 Fungame\"");
+            Add("config.general.progress_update_interval.name", "进度更新间隔");
+            Add("config.general.progress_update_interval.description", "放置方块时每 N 个方块更新一次进度显示。数值越小更新越频繁，但可能影响生成性能");
             
             // Fungame Format
             Add("format.author", "作者: {0}");
@@ -39,6 +39,7 @@ namespace CustomFungamePack.Lang
             Add("feature.spike_stabber_data", "尖刺陷阱");
             Add("feature.geyser_data", "间歇泉");
             Add("feature.beartrap_data", "捕兽夹");
+            Add("feature.xp_data", "经验值");
 
             // Feature - 子属性
             Add("feature.mine.undestroy", "不毁");
@@ -68,6 +69,20 @@ namespace CustomFungamePack.Lang
             Add("feature.beartrap.damage_mult", "伤害倍率");
             Add("feature.beartrap.undestroy", "不毁");
             Add("feature.beartrap.cooldown", "冷却");
+
+            // XP 子属性
+            Add("feature.xp.str_xp", "力量等级");
+            Add("feature.xp.res_xp", "韧性等级");
+            Add("feature.xp.int_xp", "智力等级");
+            Add("feature.xp.exp_str", "力量经验");
+            Add("feature.xp.exp_res", "韧性经验");
+            Add("feature.xp.exp_int", "智力经验");
+            Add("feature.xp.min_str", "最小力量经验");
+            Add("feature.xp.max_str", "最大力量经验");
+            Add("feature.xp.min_res", "最小韧性经验");
+            Add("feature.xp.max_res", "最大韧性经验");
+            Add("feature.xp.min_int", "最小智力经验");
+            Add("feature.xp.max_int", "最大智力经验");
 
             // Command - Fungame
             Add("command.fungame.description", "Fungame 的相关指令");

@@ -911,7 +911,7 @@ public class ModCommand : ModCommandBase
             }
         }
 
-        // List feature data objects (MineData, JumpPadData, etc.)
+        // List feature data objects (MineData, JumpPadData, XpData, etc.)
         var featureDataTypes = new Dictionary<string, object>
         {
             ["mine"] = fungame.MineData,
@@ -920,7 +920,8 @@ public class ModCommand : ModCommandBase
             ["sound_cannon"] = fungame.SoundCannonData,
             ["spike_stabber"] = fungame.SpikeStabberData,
             ["geyser"] = fungame.GeyserData,
-            ["beartrap"] = fungame.BearTrapData
+            ["beartrap"] = fungame.BearTrapData,
+            ["xp"] = fungame.XpData
         };
 
         foreach (var kvp in featureDataTypes)
@@ -1049,6 +1050,7 @@ public class ModCommand : ModCommandBase
             "geyser" => "GeyserData",
             "beartrap" => "BearTrapData",
             "world_settings" => "WorldSettings",
+            "xp" => "XpData",
             _ => null
         };
 

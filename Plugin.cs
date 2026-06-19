@@ -18,7 +18,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string Guid = "org.explosivehydra.customfungamepack";
     public const string Name = "Custom Fungame Pack";
-    public const string Version = "1.1.0";
+    public const string Version = "1.1.1";
 
     internal new static ManualLogSource Logger;
     private readonly Harmony _harmony = new(Guid);
@@ -42,10 +42,10 @@ public class Plugin : BaseUnityPlugin
         _harmony.PatchAll();
         FungameCheck.Initialize();
 
-        MoreLogs = RegisterConfig("more_logs", false);
-        StartGameUseFungame = RegisterConfig("start_game_use_fungame", false);
-        FirstUseFungame = RegisterConfig("first_use_fungame", TemplateFungame.Id);
-        ProgressUpdateInterval = RegisterConfig("progress_update_interval", 33);
+        MoreLogs = RegisterConfigGeneral(Config, "more_logs", false);
+        StartGameUseFungame = RegisterConfigGeneral(Config, "start_game_use_fungame", false);
+        FirstUseFungame = RegisterConfigGeneral(Config, "first_use_fungame", TemplateFungame.Id);
+        ProgressUpdateInterval = RegisterConfigGeneral(Config, "progress_update_interval", 333);
         ModConfigs.ReloadConfigs();
     }
 
@@ -56,14 +56,6 @@ public class Plugin : BaseUnityPlugin
         Version = Version,
         Author = ["Black_Moss"],
         Description = "a map template",
-        CommandData = new CommandData
-        {
-            LoopCommands =
-            [
-                "heal"
-            ],
-            LoopInterval = 10
-        },
         Levels =
         [
             new LevelData
@@ -178,12 +170,12 @@ public class Plugin : BaseUnityPlugin
                     },
                     new ItemData
                     {
-                        Id = Items.GravBag,
+                        Id = Items.MindWipe,
                         Slot = Slots.Mouth
                     },
                     new ItemData
                     {
-                        Id = Items._12Gauge,
+                        Id = Items.GravBag,
                         Slot = Slots.UpperBck
                     },
                     new ItemData
@@ -241,7 +233,7 @@ public class Plugin : BaseUnityPlugin
         },
         XpData = new XpData
         {
-            StrXp = 9999,
+            // StrXp = 999,
             ResXp = 999,
             IntXp = 999
         },
@@ -250,14 +242,24 @@ public class Plugin : BaseUnityPlugin
             SkipBackground = false
         }
     };
-
-    private ConfigEntry<T> RegisterConfig<T>(string key, T defaultValue)
+    
+    private static ConfigEntry<T> RegisterConfigGeneral<T>(ConfigFile configFile, string key, T defaultValue)
     {
-        var entry = Config.Bind("General", key, defaultValue, ConfigLocale($"{key}.description"));
-        ConfigRegistry[key] = entry;
-        return entry;
+        return RegisterConfig(configFile, "General", key, defaultValue);
     }
 
+    private static ConfigEntry<T> RegisterConfig<T>(ConfigFile configFile, string section, string key, T defaultValue)
+    {
+        var sectionPrefix = SectionToLocalePrefix(section);
+        return MossLib.Tool.Config.Register(configFile, section, key, defaultValue,
+            _ => Locale($"config.{sectionPrefix}.{key}.description"), ConfigRegistry);
+    }
+
+    private static string SectionToLocalePrefix(string section)
+    {
+        return section.ToLower().Replace(" - ", ".");
+    }
+    
     public static object GetConfigValue(string key)
     {
         return ConfigRegistry.TryGetValue(key, out var entry)
@@ -283,11 +285,6 @@ public class Plugin : BaseUnityPlugin
     }
 
     public static bool HasConfig(string key) => ConfigRegistry.ContainsKey(key);
-
-    private static string ConfigLocale(string key)
-    {
-        return Locale($"config.{key}");
-    }
 
     private static string Locale(string key)
     {

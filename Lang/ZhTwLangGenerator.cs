@@ -9,14 +9,14 @@ namespace CustomFungamePack.Lang
         protected override void BuildLocaleData()
         {
             // Config
-            Add("config.more_logs.name", "更多日誌");
-            Add("config.more_logs.description", "顯示更多日誌");
-            Add("config.start_game_use_fungame.name", "開始遊戲使用 Fungame");
-            Add("config.start_game_use_fungame.description", "開啟新遊戲時使用選中的 Fungame");
-            Add("config.first_use_fungame.name", "首選 Fungame");
-            Add("config.first_use_fungame.description", "開始新遊戲時使用的 Fungame ID。需要啟用\"開始遊戲使用 Fungame\"");
-            Add("config.progress_update_interval.name", "進度更新間隔");
-            Add("config.progress_update_interval.description", "放置方塊時每 N 個方塊更新一次進度顯示。數值越小更新越頻繁，但可能影響生成效能。");
+            Add("config.general.more_logs.name", "更多日誌");
+            Add("config.general.more_logs.description", "顯示更多日誌");
+            Add("config.general.start_game_use_fungame.name", "開始遊戲使用 Fungame");
+            Add("config.general.start_game_use_fungame.description", "開啟新遊戲時使用選中的 Fungame");
+            Add("config.general.first_use_fungame.name", "首選 Fungame");
+            Add("config.general.first_use_fungame.description", "開始新遊戲時使用的 Fungame ID。需要啟用\"開始遊戲使用 Fungame\"");
+            Add("config.general.progress_update_interval.name", "進度更新間隔");
+            Add("config.general.progress_update_interval.description", "放置方塊時每 N 個方塊更新一次進度顯示。數值越小更新越頻繁，但可能影響生成效能。");
             
             // Fungame Format
             Add("format.author", "作者: {0}");
@@ -39,6 +39,7 @@ namespace CustomFungamePack.Lang
             Add("feature.spike_stabber_data", "尖刺陷阱");
             Add("feature.geyser_data", "間歇泉");
             Add("feature.beartrap_data", "捕獸夾");
+            Add("feature.xp_data", "經驗值");
 
             // Feature - 子屬性
             Add("feature.mine.undestroy", "不毀");
@@ -69,6 +70,20 @@ namespace CustomFungamePack.Lang
             Add("feature.beartrap.undestroy", "不毀");
             Add("feature.beartrap.cooldown", "冷卻");
             
+            // XP 子屬性
+            Add("feature.xp.str_xp", "力量等級");
+            Add("feature.xp.res_xp", "韌性等級");
+            Add("feature.xp.int_xp", "智力等級");
+            Add("feature.xp.exp_str", "力量經驗");
+            Add("feature.xp.exp_res", "韌性經驗");
+            Add("feature.xp.exp_int", "智力經驗");
+            Add("feature.xp.min_str", "最小力量經驗");
+            Add("feature.xp.max_str", "最大力量經驗");
+            Add("feature.xp.min_res", "最小韌性經驗");
+            Add("feature.xp.max_res", "最大韌性經驗");
+            Add("feature.xp.min_int", "最小智力經驗");
+            Add("feature.xp.max_int", "最大智力經驗");
+
             // Command - Fungame
             Add("command.fungame.description", "Fungame 的相關指令");
             Add("command.fungame.string", "選擇功能");

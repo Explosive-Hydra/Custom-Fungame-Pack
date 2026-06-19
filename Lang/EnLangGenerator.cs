@@ -9,14 +9,14 @@ namespace CustomFungamePack.Lang
         protected override void BuildLocaleData()
         {
             // Config
-            Add("config.more_logs.name", "More logs");
-            Add("config.more_logs.description", "Display more logs");
-            Add("config.start_game_use_fungame.name", "Start game use fungame");
-            Add("config.start_game_use_fungame.description", "Use the selected Fungame when starting a new game.");
-            Add("config.first_use_fungame.name", "First use fungame");
-            Add("config.first_use_fungame.description", "The Fungame ID to use when starting a new game. Requires 'Start Use Fungame' to be enabled.");
-            Add("config.progress_update_interval.name", "Progress update interval");
-            Add("config.progress_update_interval.description", "Number of blocks between progress text updates during map generation. Lower values update more frequently but may impact performance.");
+            Add("config.general.more_logs.name", "More logs");
+            Add("config.general.more_logs.description", "Display more logs");
+            Add("config.general.start_game_use_fungame.name", "Start game use fungame");
+            Add("config.general.start_game_use_fungame.description", "Use the selected Fungame when starting a new game.");
+            Add("config.general.first_use_fungame.name", "First use fungame");
+            Add("config.general.first_use_fungame.description", "The Fungame ID to use when starting a new game. Requires 'Start Use Fungame' to be enabled.");
+            Add("config.general.progress_update_interval.name", "Progress update interval");
+            Add("config.general.progress_update_interval.description", "Number of blocks between progress text updates during map generation. Lower values update more frequently but may impact performance.");
             
             // Fungame Format
             Add("format.author", "by {0}");
@@ -39,6 +39,7 @@ namespace CustomFungamePack.Lang
             Add("feature.spike_stabber_data", "Spike Stabber");
             Add("feature.geyser_data", "Geyser");
             Add("feature.beartrap_data", "Bear Trap");
+            Add("feature.xp_data", "XP");
 
             // Feature - Child properties
             Add("feature.mine.undestroy", "Undestroy");
@@ -68,6 +69,20 @@ namespace CustomFungamePack.Lang
             Add("feature.beartrap.damage_mult", "Damage");
             Add("feature.beartrap.undestroy", "Undestroy");
             Add("feature.beartrap.cooldown", "Cooldown");
+
+            // XP Child properties
+            Add("feature.xp.str_xp", "Strength Level");
+            Add("feature.xp.res_xp", "Resilience Level");
+            Add("feature.xp.int_xp", "Intelligence Level");
+            Add("feature.xp.exp_str", "Strength EXP");
+            Add("feature.xp.exp_res", "Resilience EXP");
+            Add("feature.xp.exp_int", "Intelligence EXP");
+            Add("feature.xp.min_str", "Min Strength EXP");
+            Add("feature.xp.max_str", "Max Strength EXP");
+            Add("feature.xp.min_res", "Min Resilience EXP");
+            Add("feature.xp.max_res", "Max Resilience EXP");
+            Add("feature.xp.min_int", "Min Intelligence EXP");
+            Add("feature.xp.max_int", "Max Intelligence EXP");
 
             // Command - Fungame
             Add("command.fungame.description", "Fungame related commands");

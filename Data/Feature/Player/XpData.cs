@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
@@ -7,10 +8,13 @@ namespace CustomFungamePack.Data.Feature.Player;
 [UsedImplicitly]
 public class XpData
 {
+    private const int StrIndex = 0;
+    private const int ResIndex = 1;
+    private const int IntIndex = 2;
+
+    private static readonly int[] DefaultBaseLevels = Skills.BaseSkills(0);
+
     [JsonProperty("type")] public string Type { get; internal set; }
-
-    private readonly int[] _base = Skills.BaseSkills(0);
-
     [JsonProperty("str_xp")] public int StrXp { get; set; }
     [JsonProperty("res_xp")] public int ResXp { get; set; }
     [JsonProperty("int_xp")] public int IntXp { get; set; }
@@ -33,31 +37,37 @@ public class XpData
         ResetToDefaults();
     }
 
-    private void ResetToDefaults()
+    public void ResetToDefaults()
     {
-        StrXp = _base[0];
-        ResXp = _base[1];
-        IntXp = _base[2];
+        StrXp = DefaultBaseLevels[StrIndex];
+        ResXp = DefaultBaseLevels[ResIndex];
+        IntXp = DefaultBaseLevels[IntIndex];
         RecalculateMinMax();
     }
 
-    private void RecalculateMinMax()
+    public void RecalculateMinMax()
     {
-        MinStr = Skills.GetExperienceForLevel(StrXp);
-        MaxStr = Skills.GetExperienceForLevel(StrXp + 1);
-        MinRes = Skills.GetExperienceForLevel(ResXp);
-        MaxRes = Skills.GetExperienceForLevel(ResXp + 1);
-        MinInt = Skills.GetExperienceForLevel(IntXp);
-        MaxInt = Skills.GetExperienceForLevel(IntXp + 1);
-
+        MinStr = ClampThreshold(Skills.GetExperienceForLevel(StrXp));
+        MaxStr = ClampThreshold(Skills.GetExperienceForLevel(StrXp + 1));
         ExpStr = MinStr;
+
+        MinRes = ClampThreshold(Skills.GetExperienceForLevel(ResXp));
+        MaxRes = ClampThreshold(Skills.GetExperienceForLevel(ResXp + 1));
         ExpRes = MinRes;
+
+        MinInt = ClampThreshold(Skills.GetExperienceForLevel(IntXp));
+        MaxInt = ClampThreshold(Skills.GetExperienceForLevel(IntXp + 1));
         ExpInt = MinInt;
     }
 
     [OnDeserialized]
     private void OnDeserialized(StreamingContext context)
     {
+        StrXp = Math.Max(0, StrXp);
+        ResXp = Math.Max(0, ResXp);
+        IntXp = Math.Max(0, IntXp);
         RecalculateMinMax();
     }
+
+    private static int ClampThreshold(int value) => Math.Max(0, value);
 }
