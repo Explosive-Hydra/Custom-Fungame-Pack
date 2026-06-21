@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using CustomFungamePack.Data;
 using CustomFungamePack.Data.Feature.World;
 using HarmonyLib;
 using UnityEngine;
@@ -12,8 +11,6 @@ namespace CustomFungamePack.Patch;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class MineScriptPatch
 {
-    private static MineData MineData => FungameCheck.CurrentFungame?.MineData;
-
     private static readonly FieldInfo PressedField = typeof(MineScript).GetField(
         "pressed",
         BindingFlags.NonPublic | BindingFlags.Instance);
@@ -23,6 +20,7 @@ public class MineScriptPatch
         BindingFlags.NonPublic | BindingFlags.Instance);
 
     private static readonly Lazy<ExplosionParams> DefaultExplosionParams = new(() => new ExplosionParams());
+    private static MineData MineData => FungameCheck.CurrentFungame?.MineData;
 
     private static ExplosionParams CreateMineExplosionParams(Vector3 pos)
     {

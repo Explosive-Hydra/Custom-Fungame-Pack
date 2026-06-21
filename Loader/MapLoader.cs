@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Bark.Tool;
 using BepInEx.Logging;
 using CustomFungamePack.Patch;
-using MossLib.Tool;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -36,7 +36,7 @@ public static class MapLoader
                     Error("load_error");
                     return;
                 case false:
-                    Warning("custom_structures_not_supported", ModLocale.Log("common.map"));
+                    Warning("custom_structures_not_supported", BetterLocale.Other("common.map"));
                     return;
             }
 
@@ -69,44 +69,41 @@ public static class MapLoader
 
         if (settings.FullBright)
         {
-            MoreLogs("feature_enabled", ModLocale.GetFormat("feature.full_bright"));
+            MoreLogs("feature_enabled", BetterLocale.Other("feature.full_bright"));
             hasAnyFeature = true;
         }
 
         if (settings.ForgivingLevel)
         {
-            MoreLogs("feature_enabled", ModLocale.GetFormat("feature.forgiving_level"));
+            MoreLogs("feature_enabled", BetterLocale.Other("feature.forgiving_level"));
             hasAnyFeature = true;
         }
 
         if (!Mathf.Approximately(settings.Gravity, Physics2D.gravity.y))
         {
-            MoreLogs("feature_enabled_with_value", ModLocale.GetFormat("feature.gravity"), settings.Gravity);
+            MoreLogs("feature_enabled_with_value", BetterLocale.Other("feature.gravity"), settings.Gravity);
             hasAnyFeature = true;
         }
 
         if (fungame.SkipTerrain)
         {
-            MoreLogs("skip_generation", ModLocale.Log("common.terrain"));
+            MoreLogs("skip_generation", BetterLocale.Other("common.terrain"));
             hasAnyFeature = true;
         }
 
         if (fungame.SkipStructures)
         {
-            MoreLogs("skip_generation", ModLocale.Log("common.structure"));
+            MoreLogs("skip_generation", BetterLocale.Other("common.structure"));
             hasAnyFeature = true;
         }
 
         if (fungame.SkipBackground)
         {
-            MoreLogs("skip_generation", ModLocale.Log("common.background"));
+            MoreLogs("skip_generation", BetterLocale.Other("common.background"));
             hasAnyFeature = true;
         }
 
-        if (!hasAnyFeature)
-        {
-            Warning("no_features_enabled");
-        }
+        if (!hasAnyFeature) Warning("no_features_enabled");
     }
 
     private static void ParseAndApplyStringMap(Fungame fungame)
@@ -114,7 +111,7 @@ public static class MapLoader
         var mapData = fungame.MapData;
         if (mapData.Map == null || mapData.Map.Length == 0)
         {
-            MoreLogs("validation.no_data", ModLocale.Log("common.map"), "string map");
+            MoreLogs("validation.no_data", BetterLocale.Other("common.map"), "string map");
             return;
         }
 
@@ -133,7 +130,7 @@ public static class MapLoader
             return;
         }
 
-        // 计算总方块数（剔除空行和空字符）
+        // �����ܷ��������޳����кͿ��ַ���
         var totalBlocks = mapData.Map
             .Where(mapRow => !string.IsNullOrEmpty(mapRow))
             .Sum(mapRow => mapRow.Count(c => c != ' '));
@@ -148,7 +145,7 @@ public static class MapLoader
         var startY = fungame.Y;
 
         var updateCounter = 0;
-        var updateInterval = ModConfigs.ProgressUpdateInterval; // 每N个方块刷新一次加载文本
+        var updateInterval = Plugin.ProgressUpdateInterval; // ÿN������ˢ��һ�μ�����??
 
         for (var row = 0; row < rowCount; row++)
         {
@@ -176,7 +173,7 @@ public static class MapLoader
                 ProcessValue(value, worldX, worldY, ref successCount, ref failCount, failLimit);
                 worldX++;
 
-                // 周期更新加载文本，实现实时进度显示
+                // ���ڸ��¼����ı���ʵ��ʵʱ������??
                 if (++updateCounter % updateInterval == 0)
                     WorldGenerationPatch.RefreshLoadingText();
             }
@@ -195,7 +192,7 @@ public static class MapLoader
         var mapData = fungame.MapData;
         if (mapData.Map == null || mapData.Map.Length == 0)
         {
-            MoreLogs("validation.no_data", ModLocale.Log("common.map"), "string map");
+            MoreLogs("validation.no_data", BetterLocale.Other("common.map"), "string map");
             yield break;
         }
 
@@ -214,13 +211,13 @@ public static class MapLoader
             yield break;
         }
 
-        // 计算总方块数（剔除空行和空字符）
+        // �����ܷ��������޳����кͿ��ַ���
         var totalBlocks = mapData.Map
             .Where(mapRow => !string.IsNullOrEmpty(mapRow))
             .Sum(mapRow => mapRow.Count(c => c != ' '));
 
         WorldGenerationPatch.TotalBlocks = totalBlocks;
-        WorldGenerationPatch._isSpawningMap = true; // 双重保险：确保 TotalBlocks 设置后才启用百分比显示
+        WorldGenerationPatch._isSpawningMap = true; // ˫�ر��գ�ȷ??TotalBlocks ���ú�����ðٷֱ���??
 
         var successCount = 0;
         var failCount = 0;
@@ -230,7 +227,7 @@ public static class MapLoader
         var startY = fungame.Y;
 
         var updateCounter = 0;
-        var updateInterval = ModConfigs.ProgressUpdateInterval;
+        var updateInterval = Plugin.ProgressUpdateInterval;
 
         for (var row = 0; row < rowCount; row++)
         {
@@ -258,7 +255,7 @@ public static class MapLoader
                 ProcessValue(value, worldX, worldY, ref successCount, ref failCount, failLimit);
                 worldX++;
 
-                // 每30个方块 yield 一次，让 Unity 渲染更新的进度文本
+                // ??0����??yield һ�Σ�??Unity ��Ⱦ���µĽ�����??
                 if (++updateCounter % updateInterval != 0) continue;
                 WorldGenerationPatch.SuccessCount = successCount;
                 WorldGenerationPatch.FailCount = failCount;
@@ -277,8 +274,8 @@ public static class MapLoader
 
     public static IEnumerator LoadAndApplyMapFromFungameAsync(Fungame fungame)
     {
-        // 注意：C# 禁止在 try-catch 中使用 yield return，
-        // 因此验证和 LogFeatureInfo 在无 try 块中执行，异常由调用者捕获
+        // ע�⣺C# ��ֹ??try-catch ��ʹ??yield return??
+        // �����֤??LogFeatureInfo ���� try ����ִ�У��쳣�ɵ����߲�??
         if (fungame == null)
         {
             Error("no_current_fungame");
@@ -294,7 +291,7 @@ public static class MapLoader
                 Error("load_error");
                 yield break;
             case false:
-                Warning("custom_structures_not_supported", ModLocale.Log("common.map"));
+                Warning("custom_structures_not_supported", BetterLocale.Other("common.map"));
                 yield break;
         }
 
@@ -361,7 +358,7 @@ public static class MapLoader
         }
         catch (Exception ex)
         {
-            Error("place_failed", x, y, ModLocale.Log("common.block"), blockId, ex.Message);
+            Error("place_failed", x, y, BetterLocale.Other("common.block"), blockId, ex.Message);
             failCount++;
         }
     }
@@ -374,7 +371,7 @@ public static class MapLoader
         }
         catch (Exception ex)
         {
-            Error("place_failed", x, y, ModLocale.Log("common.item"), id, ex.Message);
+            Error("place_failed", x, y, BetterLocale.Other("common.item"), id, ex.Message);
         }
     }
 
@@ -401,15 +398,13 @@ public static class MapLoader
             backgrounds = new Dictionary<Vector2Int, string>();
 
             for (var y = 0; y < height; y++)
+            for (var x = 0; x < width; x++)
             {
-                for (var x = 0; x < width; x++)
-                {
-                    blocks[x, y] = reader.ReadUInt16();
-                    liquids[x, y] = reader.ReadByte();
-                    var bg = reader.ReadString();
-                    if (!string.IsNullOrEmpty(bg))
-                        backgrounds[new Vector2Int(x, y)] = bg;
-                }
+                blocks[x, y] = reader.ReadUInt16();
+                liquids[x, y] = reader.ReadByte();
+                var bg = reader.ReadString();
+                if (!string.IsNullOrEmpty(bg))
+                    backgrounds[new Vector2Int(x, y)] = bg;
             }
         }
 
@@ -422,47 +417,35 @@ public static class MapLoader
         var worldHeight = (int)WorldGeneration.world.height;
 
         for (var x = 0; x < width; x++)
+        for (var y = 0; y < height; y++)
         {
-            for (var y = 0; y < height; y++)
-            {
-                var worldX = anchorX + x;
-                var worldY = anchorY + y;
+            var worldX = anchorX + x;
+            var worldY = anchorY + y;
 
-                if (worldX < 0 || worldX >= worldWidth || worldY < 0 || worldY >= worldHeight)
-                    continue;
+            if (worldX < 0 || worldX >= worldWidth || worldY < 0 || worldY >= worldHeight)
+                continue;
 
-                if (blocks[x, y] > 0)
+            if (blocks[x, y] > 0) PlaceBlock(blocks[x, y], worldX, worldY, ref blockCount, ref failCount);
+
+            if (liquids[x, y] > 0 && FluidManager.main != null)
+                try
                 {
-                    PlaceBlock(blocks[x, y], worldX, worldY, ref blockCount, ref failCount);
+                    FluidManager.main.SetLiquid(worldX, worldY, liquids[x, y]);
+                    liquidCount++;
+                }
+                catch (Exception ex)
+                {
+                    Error("place_failed", worldX, worldY, "liquid", liquids[x, y], ex.Message);
+                    failCount++;
                 }
 
-                if (liquids[x, y] > 0 && FluidManager.main != null)
-                {
-                    try
-                    {
-                        FluidManager.main.SetLiquid(worldX, worldY, liquids[x, y]);
-                        liquidCount++;
-                    }
-                    catch (Exception ex)
-                    {
-                        Error("place_failed", worldX, worldY, "liquid", liquids[x, y], ex.Message);
-                        failCount++;
-                    }
-                }
-
-                Vector2Int localPos = new(x, y);
-                if (backgrounds.TryGetValue(localPos, out string bgId))
-                {
-                    World.PlaceBackground(new Vector2Int(worldX, worldY), bgId);
-                }
-            }
+            Vector2Int localPos = new(x, y);
+            if (backgrounds.TryGetValue(localPos, out var bgId))
+                World.PlaceBackground(new Vector2Int(worldX, worldY), bgId);
         }
 
         MoreLogs("build_mode_save_applied", blockCount, liquidCount, bgCount, failCount);
-        for (var i = 0; i < 5; i++)
-        {
-            Player.Tp(FungameCheck.CurrentFungame.SpawnPosition);
-        }
+        for (var i = 0; i < 5; i++) Player.Tp(FungameCheck.CurrentFungame.SpawnPosition);
 
         PickItems(FungameCheck.CurrentFungame);
     }
@@ -603,39 +586,36 @@ public static class MapLoader
     private static void PickItems(Fungame fungame)
     {
         var items = fungame.Items;
-        foreach (var item in items)
-        {
-            Player.PickItem(item.Id, item.Slot, item.Force);
-        }
+        foreach (var item in items) Player.PickItem(item.Id, item.Slot, item.Force);
     }
 
     private static void LogConsole(string key, params object[] args)
     {
-        var message = ModLocale.GetFormat($"command.fungame.{key}", args);
+        var message = BetterLocale.Other($"command.fungame.{key}", args);
         Log.Info(message, Logger);
     }
 
     private static void Info(string key, params object[] args)
     {
-        var message = ModLocale.Log($"{LocaleKeyPre}{key}", args);
+        var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
         Log.Info(message, Logger);
     }
 
     private static void MoreLogs(string key, params object[] args)
     {
-        if (ModConfigs.MoreLogs)
+        if (Plugin.MoreLogs)
             Info(key, args);
     }
 
     private static void Error(string key, params object[] args)
     {
-        var message = ModLocale.Log($"{LocaleKeyPre}{key}", args);
+        var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
         Log.Error(message, Logger);
     }
 
     private static void Warning(string key, params object[] args)
     {
-        var message = ModLocale.Log($"{LocaleKeyPre}{key}", args);
+        var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
         Log.Warning(message, Logger);
     }
 }

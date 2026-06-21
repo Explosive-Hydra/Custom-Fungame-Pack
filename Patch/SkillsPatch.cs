@@ -9,15 +9,15 @@ namespace CustomFungamePack.Patch;
 public class SkillsPatch
 {
     /// <summary>
-    /// 技能等级的安全上限。After level 30 the XP curve doubles each level,
-    /// causing GetExperienceForLevel to overflow int.MaxValue for huge levels
-    /// (e.g. 999), which breaks the entire XP system.
+    ///     技能等级的安全上限。After level 30 the XP curve doubles each level,
+    ///     causing GetExperienceForLevel to overflow int.MaxValue for huge levels
+    ///     (e.g. 999), which breaks the entire XP system.
     /// </summary>
     private const int MaxSafeLevel = 30;
 
     /// <summary>
-    /// CheckForLevelUp while 循环的最大迭代次数。
-    /// 原始方法没有限制，当经验值极大时会导致游戏卡死。
+    ///     CheckForLevelUp while 循环的最大迭代次数。
+    ///     原始方法没有限制，当经验值极大时会导致游戏卡死。
     /// </summary>
     private const int MaxLevelUpsPerCheck = 20;
 
@@ -49,9 +49,9 @@ public class SkillsPatch
     }
 
     /// <summary>
-    /// 替换 CheckForLevelUp，防止 while 循环无限迭代导致卡死。
-    /// 与原始方法行为一致（循环内调 UpdateExpBoundaries），仅增加迭代上限。
-    /// 达到上限后将对应属性的经验值钳制到 max-1，防止下一帧重复触发。
+    ///     替换 CheckForLevelUp，防止 while 循环无限迭代导致卡死。
+    ///     与原始方法行为一致（循环内调 UpdateExpBoundaries），仅增加迭代上限。
+    ///     达到上限后将对应属性的经验值钳制到 max-1，防止下一帧重复触发。
     /// </summary>
     [HarmonyPatch("CheckForLevelUp")]
     [HarmonyPrefix]
@@ -62,8 +62,8 @@ public class SkillsPatch
         ref int xpToLevel,
         ref bool __result)
     {
-        int iterations = 0;
-        while ((double)xp >= (double)xpToLevel)
+        var iterations = 0;
+        while (xp >= (double)xpToLevel)
         {
             ++level;
             __instance.UpdateExpBoundaries();
@@ -75,13 +75,14 @@ public class SkillsPatch
                 break;
             }
         }
+
         __result = iterations > 0;
         return false;
     }
 
     /// <summary>
-    /// 根据传入的 xp 值（exp 字段的副本）匹配对应的属性，
-    /// 将经验值设到 max-1，防止下一帧重复升级。
+    ///     根据传入的 xp 值（exp 字段的副本）匹配对应的属性，
+    ///     将经验值设到 max-1，防止下一帧重复升级。
     /// </summary>
     private static void ConsumeExcessXp(Skills __instance, float xp)
     {

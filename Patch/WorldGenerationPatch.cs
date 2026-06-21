@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Bark.Tool;
 using BepInEx.Logging;
 using CustomFungamePack.Loader;
 using HarmonyLib;
-using MossLib.Tool;
 using UnityEngine;
 
 namespace CustomFungamePack.Patch;
@@ -28,6 +28,8 @@ public static class WorldGenerationPatch
     private static bool _hasShownFungameLoading;
 
     public static WorldGeneration.OverrideSceneType? ExitTargetScene;
+
+    private static string _phaseArg = "";
 
     [HarmonyPatch("Awake")]
     [HarmonyPostfix]
@@ -59,26 +61,22 @@ public static class WorldGenerationPatch
             WorldGeneration.biomeOverride = ExitTargetScene.Value;
             MoreLogs("scene_type_set", ExitTargetScene.Value);
         }
-        else if (ModConfigs.StartGameUseFungame)
+        else if (Plugin.StartGameUseFungame)
         {
             Fungame fungame = null;
 
-            if (!string.IsNullOrEmpty(ModConfigs.FirstUseFungame))
+            if (!string.IsNullOrEmpty(Plugin.FirstUseFungame))
             {
-                var targetId = ModConfigs.FirstUseFungame;
+                var targetId = Plugin.FirstUseFungame;
                 fungame = FungameCheck.Fungames.FirstOrDefault(f =>
                     f != null &&
                     (f.Id?.Equals(targetId, StringComparison.OrdinalIgnoreCase) == true ||
                      f.Name?.Equals(targetId, StringComparison.OrdinalIgnoreCase) == true));
 
                 if (fungame != null)
-                {
                     Info("start_game_fungame", FungameLocale.GetName(fungame), fungame.Id);
-                }
                 else
-                {
                     Warning("start_game_fungame_not_found", targetId);
-                }
             }
 
             fungame ??= FungameCheck.Fungames.FirstOrDefault();
@@ -147,9 +145,7 @@ public static class WorldGenerationPatch
             if (main != null && main.body != null
                              && (main.body.transform.position.y <= mapBottom
                                  || main.transform.position.y <= mapBottom))
-            {
                 Player.Tp(new Vector2(main.transform.position.x, mapTop));
-            }
         }
 
         Physics2D.gravity = new Vector2(0, settings.Gravity);
@@ -166,7 +162,7 @@ public static class WorldGenerationPatch
     }
 
     /// <summary>
-    /// 强制立即更新加载文本（用于同步操作期间，Update() 不会触发的情况）
+    ///     强制立即更新加载文本（用于同步操作期间，Update() 不会触发的情况）
     /// </summary>
     internal static void RefreshLoadingText()
     {
@@ -178,13 +174,14 @@ public static class WorldGenerationPatch
         if (_isSpawningMap && TotalBlocks > 0)
         {
             var total = SuccessCount + FailCount;
-            // 安全保护：当 total==0 时强制 pct=0，防止 TotalBlocks 尚未设置时除零导致 NaN→100
+            // 安全保护：当 total==0 时强�?pct=0，防�?TotalBlocks 尚未设置时除零导�?NaN�?00
             var pct = total > 0
                 ? Mathf.Clamp((int)((float)total / TotalBlocks * 100f), 0, 100)
                 : 0;
             text = Locale("phase.placing_blocks", name, SuccessCount, FailCount, TotalBlocks, pct);
         }
         else
+        {
             text = _generationPhase switch
             {
                 "preparing" => Locale("phase.preparing", name),
@@ -195,6 +192,7 @@ public static class WorldGenerationPatch
                 "applying_settings" => Locale("phase.applying_settings", name),
                 _ => Locale("phase.generating", name)
             };
+        }
 
         WorldGeneration.loadingText.text = text;
     }
@@ -203,8 +201,6 @@ public static class WorldGenerationPatch
     {
         RefreshLoadingText();
     }
-
-    private static string _phaseArg = "";
 
     private static void SetPhase(string phaseKey, string arg = "")
     {
@@ -217,8 +213,8 @@ public static class WorldGenerationPatch
     public static bool SkipWorldCreateBackground()
     {
         if (CurrentFungame is not { SkipBackground: true }) return true;
-        SetPhase("skipping", ModLocale.Log("common.background"));
-        MoreLogs("skip_generation", ModLocale.Log("common.background"));
+        SetPhase("skipping", BetterLocale.Other("common.background"));
+        MoreLogs("skip_generation", BetterLocale.Other("common.background"));
         return false;
     }
 
@@ -227,8 +223,8 @@ public static class WorldGenerationPatch
     public static bool SkipWorldGenerateStructures()
     {
         if (CurrentFungame is not { SkipStructures: true }) return true;
-        SetPhase("skipping", ModLocale.Log("common.structure"));
-        MoreLogs("skip_generation", ModLocale.Log("common.structure"));
+        SetPhase("skipping", BetterLocale.Other("common.structure"));
+        MoreLogs("skip_generation", BetterLocale.Other("common.structure"));
         return false;
     }
 
@@ -237,7 +233,7 @@ public static class WorldGenerationPatch
     public static bool SetLoadingTextPrefix(string localetext)
     {
         return !_loading || CurrentFungame == null;
-        // 正在加载Fungame时，阻塞游戏自身的进度文本，防止覆盖我们的实时进度显示
+        // 正在加载Fungame时，阻塞游戏自身的进度文本，防止覆盖我们的实时进度显�?
         // UpdateLoadingText 会在 Update 中持续设置正确的文本
     }
 
@@ -247,8 +243,8 @@ public static class WorldGenerationPatch
     public static bool SkipWorldGenerateTerrain()
     {
         if (CurrentFungame is not { SkipTerrain: true }) return true;
-        SetPhase("skipping", ModLocale.Log("common.terrain"));
-        MoreLogs("skip_generation", ModLocale.Log("common.terrain"));
+        SetPhase("skipping", BetterLocale.Other("common.terrain"));
+        MoreLogs("skip_generation", BetterLocale.Other("common.terrain"));
         return false;
     }
 
@@ -257,7 +253,7 @@ public static class WorldGenerationPatch
     public static bool InitializationWorld(WorldGeneration __instance)
     {
         // 阻塞原始 FinishWorldGeneration 协程，改用我们自己的协程
-        // 这样可以在方块放置过程中 yield 让 Unity 渲染进度文本
+        // 这样可以在方块放置过程中 yield �?Unity 渲染进度文本
         __instance.StartCoroutine(ContentLoadingCoroutine(__instance));
         return false;
     }
@@ -266,7 +262,7 @@ public static class WorldGenerationPatch
     {
         if (_hasShownFungameLoading)
         {
-            // 通过 StartFungameLoading 启动的，_loading 已经是 true
+            // 通过 StartFungameLoading 启动的，_loading 已经�?true
         }
         else
         {
@@ -305,28 +301,26 @@ public static class WorldGenerationPatch
         var hasCustomStructures = !string.IsNullOrEmpty(fungame.CustomStructures);
         var hasBuildModeSave = !string.IsNullOrEmpty(fungame.BuildModeSave);
 
-        // 支持所有内容类型共存，按顺序执行
+        // 支持所有内容类型共存，按顺序执�?
         if (hasMapData)
         {
-            // 提前计算 TotalBlocks，确保第一次 RefreshLoadingText 就能显示正确百分比
+            // 提前计算 TotalBlocks，确保第一�?RefreshLoadingText 就能显示正确百分�?
             var mapData = fungame.MapData;
             if (mapData?.Map is { Length: > 0 })
-            {
                 TotalBlocks = mapData.Map
                     .Where(row => !string.IsNullOrEmpty(row))
                     .Sum(row => row.Count(c => c != ' '));
-            }
 
             SetPhase("spawning_map");
             _isSpawningMap = true;
             RefreshLoadingText(); // 此时 TotalBlocks 已设置，显示 0%
 
-            // 异步加载地图：每30个方块 yield 一次，让 Unity 渲染进度文本
+            // 异步加载地图：每30个方�?yield 一次，�?Unity 渲染进度文本
             yield return MapLoader.LoadAndApplyMapFromFungameAsync(fungame);
 
             _isSpawningMap = false;
 
-            // 地图加载完成后执行启动命令和提示（仍在加载界面下）
+            // 地图加载完成后执行启动命令和提示（仍在加载界面下�?
             ExecuteCommands(fungame);
 
             var modInfo = FungameLocale.GetFormattedNameVersion(fungame);
@@ -345,13 +339,9 @@ public static class WorldGenerationPatch
             var hasCustomStructuresMod = Type.GetType(
                 "Custom_Structures.Plugin, Custom Structures") != null;
             if (hasCustomStructuresMod)
-            {
                 CustomStructuresLoader.SpawnCustomStructures(fungame);
-            }
             else
-            {
                 Error("custom_structures_mod_not_loaded", FungameLocale.GetName(fungame));
-            }
         }
 
         if (hasBuildModeSave)
@@ -361,24 +351,22 @@ public static class WorldGenerationPatch
         }
 
         if (!hasMapData && !hasCustomStructures && !hasBuildModeSave)
-        {
             Warning("no_content_type", FungameLocale.GetName(fungame));
-        }
 
         // === 复用原始 FinishWorldGeneration 的清理逻辑 ===
         GlobalDark.main.Darken();
         yield return new WaitUntil(() => !GlobalDark.main.IsDarkening());
 
-        // 应用层修饰（原始逻辑中仅在 biomeOverride == None 时调用）
+        // 应用层修饰（原始逻辑中仅�?biomeOverride == None 时调用）
         instance.ApplyLayerModifiers();
 
         // 标记世界生成完成（必要：游戏检查此标志判断世界是否可交互）
         instance.generatingWorld = false;
 
-        // 强制刷新全部方块视觉（确保我们放置的方块正确渲染）
+        // 强制刷新全部方块视觉（确保我们放置的方块正确渲染�?
         instance.UpdateWorld();
 
-        // 停用所有块、更新可见性
+        // 停用所有块、更新可见�?
         instance.DisableAllChunks();
         instance.UpdateChunkVisibility();
 
@@ -391,21 +379,19 @@ public static class WorldGenerationPatch
     private static void ExecuteCommands(Fungame fungame)
     {
         var commands = fungame.CommandData;
-        if (commands == null || (commands.OnceCommands == null || commands.OnceCommands.Count == 0) &&
-            (commands.LoopCommands == null || commands.LoopCommands.Count == 0))
+        if (commands == null || ((commands.OnceCommands == null || commands.OnceCommands.Count == 0) &&
+                                 (commands.LoopCommands == null || commands.LoopCommands.Count == 0)))
         {
-            MoreLogs("no_commands", ModLocale.Log("common.startup_command"));
+            MoreLogs("no_commands", BetterLocale.Other("common.startup_command"));
             return;
         }
 
         if (commands.OnceCommands != null)
-        {
             foreach (var command in commands.OnceCommands)
             {
-                MoreLogs("executing_command", ModLocale.Log("common.startup_command"), command);
+                MoreLogs("executing_command", BetterLocale.Other("common.startup_command"), command);
                 GameConsole.RunCommand(command);
             }
-        }
 
         _sLoopTimer = 0f;
     }
@@ -426,7 +412,7 @@ public static class WorldGenerationPatch
 
         foreach (var command in loopCommands)
         {
-            MoreLogs("executing_loop_command", ModLocale.Log("common.loop_command"), command);
+            MoreLogs("executing_loop_command", BetterLocale.Other("common.loop_command"), command);
             GameConsole.RunCommand(command);
         }
     }
@@ -460,7 +446,7 @@ public static class WorldGenerationPatch
 
     private static void MoreLogs(string key, params object[] args)
     {
-        if (ModConfigs.MoreLogs)
+        if (Plugin.MoreLogs)
             Info(key, args);
     }
 
@@ -472,7 +458,7 @@ public static class WorldGenerationPatch
 
     private static void Error(string key, params object[] args)
     {
-        var message = ModLocale.Log($"error.{key}", args);
+        var message = BetterLocale.Other($"error.{key}", args);
         Log.Error(message, Logger);
     }
 
@@ -484,6 +470,6 @@ public static class WorldGenerationPatch
 
     private static string Locale(string key, params object[] args)
     {
-        return ModLocale.Log($"{LocaleKeyPre}{key}", args);
+        return BetterLocale.Other($"{LocaleKeyPre}{key}", args);
     }
 }

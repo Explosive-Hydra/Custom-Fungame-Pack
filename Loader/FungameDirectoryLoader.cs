@@ -34,14 +34,21 @@ public static class FungameDirectoryLoader
             fungame.WorldSettingsData = LoadWorldSettings(directoryPath) ?? new WorldSettingsData();
 
             fungame.MineData = LoadFeatureFile<MineData>(directoryPath, "world", "mine.json", "feature.world.mine");
-            fungame.JumpPadData = LoadFeatureFile<JumpPadData>(directoryPath, "world", "jump_pad.json", "feature.world.jump_pad");
-            fungame.TurretData = LoadFeatureFile<TurretData>(directoryPath, "world", "turret.json", "feature.world.turret");
-            fungame.SoundCannonData = LoadFeatureFile<SoundCannonData>(directoryPath, "world", "sound_cannon.json", "feature.world.sound_cannon");
-            fungame.SpikeStabberData = LoadFeatureFile<SpikeStabberData>(directoryPath, "world", "spike_stabber.json", "feature.world.spike_stabber");
-            fungame.GeyserData = LoadFeatureFile<GeyserData>(directoryPath, "world", "geyser.json", "feature.world.geyser");
-            fungame.BearTrapData = LoadFeatureFile<BearTrapData>(directoryPath, "world", "beartrap.json", "feature.world.beartrap");
-            
-            fungame.XpData = LoadFeatureFile<XpData>(directoryPath, "player", "xp.json", "feature.player.xp") ?? new XpData();
+            fungame.JumpPadData =
+                LoadFeatureFile<JumpPadData>(directoryPath, "world", "jump_pad.json", "feature.world.jump_pad");
+            fungame.TurretData =
+                LoadFeatureFile<TurretData>(directoryPath, "world", "turret.json", "feature.world.turret");
+            fungame.SoundCannonData = LoadFeatureFile<SoundCannonData>(directoryPath, "world", "sound_cannon.json",
+                "feature.world.sound_cannon");
+            fungame.SpikeStabberData = LoadFeatureFile<SpikeStabberData>(directoryPath, "world", "spike_stabber.json",
+                "feature.world.spike_stabber");
+            fungame.GeyserData =
+                LoadFeatureFile<GeyserData>(directoryPath, "world", "geyser.json", "feature.world.geyser");
+            fungame.BearTrapData =
+                LoadFeatureFile<BearTrapData>(directoryPath, "world", "beartrap.json", "feature.world.beartrap");
+
+            fungame.XpData = LoadFeatureFile<XpData>(directoryPath, "player", "xp.json", "feature.player.xp") ??
+                             new XpData();
 
             fungame.CommandData = LoadCommandData(directoryPath);
 
@@ -68,7 +75,6 @@ public static class FungameDirectoryLoader
 
         var levels = new List<LevelData>();
         foreach (var levelFile in levelFiles)
-        {
             try
             {
                 var levelData = LoadJsonWithTypeCheck<LevelData>(levelFile, "level");
@@ -79,7 +85,6 @@ public static class FungameDirectoryLoader
             {
                 // ignore
             }
-        }
 
         return levels;
     }
@@ -137,7 +142,8 @@ public static class FungameDirectoryLoader
             return;
 
         // 从目录名生成 id（小写）
-        var dirName = Path.GetFileName(directoryPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        var dirName =
+            Path.GetFileName(directoryPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
         var originalId = fungame.Id;
         fungame.Id = dirName.ToLowerInvariant();
 
@@ -155,7 +161,6 @@ public static class FungameDirectoryLoader
 
             // 清理旧的关卡文件，防止重复
             foreach (var oldFile in Directory.GetFiles(levelDir, "*.json"))
-            {
                 try
                 {
                     File.Delete(oldFile);
@@ -164,7 +169,6 @@ public static class FungameDirectoryLoader
                 {
                     /* ignore */
                 }
-            }
 
             for (var i = 0; i < fungame.Levels.Count; i++)
             {
@@ -174,25 +178,30 @@ public static class FungameDirectoryLoader
         }
 
         if (fungame.WorldSettingsData != null)
-            SaveFeatureFileToDisk(directoryPath, "world", "settings.json", fungame.WorldSettingsData, "feature.world.settings");
+            SaveFeatureFileToDisk(directoryPath, "world", "settings.json", fungame.WorldSettingsData,
+                "feature.world.settings");
 
         SaveFeatureFileToDisk(directoryPath, "world", "mine.json", fungame.MineData, "feature.world.mine");
         SaveFeatureFileToDisk(directoryPath, "world", "jump_pad.json", fungame.JumpPadData, "feature.world.jump_pad");
         SaveFeatureFileToDisk(directoryPath, "world", "turret.json", fungame.TurretData, "feature.world.turret");
-        SaveFeatureFileToDisk(directoryPath, "world", "sound_cannon.json", fungame.SoundCannonData, "feature.world.sound_cannon");
-        SaveFeatureFileToDisk(directoryPath, "world", "spike_stabber.json", fungame.SpikeStabberData, "feature.world.spike_stabber");
+        SaveFeatureFileToDisk(directoryPath, "world", "sound_cannon.json", fungame.SoundCannonData,
+            "feature.world.sound_cannon");
+        SaveFeatureFileToDisk(directoryPath, "world", "spike_stabber.json", fungame.SpikeStabberData,
+            "feature.world.spike_stabber");
         SaveFeatureFileToDisk(directoryPath, "world", "geyser.json", fungame.GeyserData, "feature.world.geyser");
         SaveFeatureFileToDisk(directoryPath, "world", "beartrap.json", fungame.BearTrapData, "feature.world.beartrap");
 
         if (fungame.XpData != null)
             SaveFeatureFileToDisk(directoryPath, "player", "xp.json", fungame.XpData, "feature.player.xp");
 
-        Plugin.Logger?.LogInfo($"[FungameDirectoryLoader.Debug] SaveToDirectory calling SaveToCurrentLang: dir={directoryPath}, Name={fungame.Name}, Id={fungame.Id}");
+        Plugin.Logger?.LogInfo(
+            $"[FungameDirectoryLoader.Debug] SaveToDirectory calling SaveToCurrentLang: dir={directoryPath}, Name={fungame.Name}, Id={fungame.Id}");
 
         // 将 name/description/author 写入当前语言的 lang 文件
         FungameLocale.SaveToCurrentLang(fungame, directoryPath);
 
-        Plugin.Logger?.LogInfo($"[FungameDirectoryLoader.Debug] SaveToDirectory after SaveToCurrentLang, CommandData is null? {fungame.CommandData == null}");
+        Plugin.Logger?.LogInfo(
+            $"[FungameDirectoryLoader.Debug] SaveToDirectory after SaveToCurrentLang, CommandData is null? {fungame.CommandData == null}");
 
         if (fungame.CommandData == null) return;
         var commandPath = Path.Combine(directoryPath, "command.json");

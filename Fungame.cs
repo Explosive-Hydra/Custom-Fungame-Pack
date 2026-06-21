@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using CustomFungamePack.Data;
 using CustomFungamePack.Data.Feature.Player;
 using CustomFungamePack.Data.Feature.World;
@@ -51,7 +50,7 @@ public class Fungame
     public string Authors => Author is { Count: > 0 }
         ? string.Join(", ", Author)
         : "Unknown";
-    
+
     [JsonIgnore] public MapData MapData => CurrentLevel?.MapData;
     [JsonIgnore] public string CustomStructures => CurrentLevel?.CustomStructures;
     [JsonIgnore] public string BuildModeSave => CurrentLevel?.BuildModeSave;

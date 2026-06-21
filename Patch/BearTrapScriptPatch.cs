@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using CustomFungamePack.Data;
 using CustomFungamePack.Data.Feature.World;
 using HarmonyLib;
 using UnityEngine;
@@ -12,8 +11,6 @@ namespace CustomFungamePack.Patch;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class BearTrapScriptPatch
 {
-    private static BearTrapData BearTrapData => FungameCheck.CurrentFungame?.BearTrapData;
-
     private static readonly FieldInfo ActivatedField = typeof(BearTrap).GetField(
         "activated", BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -24,6 +21,7 @@ public class BearTrapScriptPatch
         "origPos", BindingFlags.NonPublic | BindingFlags.Instance);
 
     private static readonly Dictionary<BearTrap, float> LastTriggerTime = new();
+    private static BearTrapData BearTrapData => FungameCheck.CurrentFungame?.BearTrapData;
 
     [HarmonyPatch("OnTriggerEnter2D")]
     [HarmonyPrefix]

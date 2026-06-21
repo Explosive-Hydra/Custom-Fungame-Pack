@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 using System.IO;
+using Bark.Tool;
 using BepInEx;
 using BepInEx.Logging;
-using MossLib.Tool;
-using UnityEngine;
 
 namespace CustomFungamePack.Loader;
 
@@ -11,15 +10,12 @@ namespace CustomFungamePack.Loader;
 public static class BuildModeSaveLoader
 {
     private const string LocaleKeyPre = "build_mode_save_loader.";
-    private static readonly ManualLogSource Logger = Plugin.Logger;
     private const string BuildModeGuid = "com.alexx_.buildmode";
+    private static readonly ManualLogSource Logger = Plugin.Logger;
 
     public static void SpawnBuildModeSave(Fungame fungame)
     {
-        if (fungame == null || string.IsNullOrEmpty(fungame.BuildModeSave))
-        {
-            return;
-        }
+        if (fungame == null || string.IsNullOrEmpty(fungame.BuildModeSave)) return;
 
         try
         {
@@ -45,27 +41,27 @@ public static class BuildModeSaveLoader
         }
     }
 
-    private static void MoreInfo(string key, params object[] args)
-    {
-        if (ModConfigs.MoreLogs)
-            Info(key, args);
-    }
+    // private static void MoreInfo(string key, params object[] args)
+    // {
+    //     if (Plugin.MoreLogs)
+    //         Info(key, args);
+    // }
 
     private static void Info(string key, params object[] args)
     {
-        var message = ModLocale.Log($"{LocaleKeyPre}{key}", args);
+        var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
         Log.Info(message, Logger);
     }
 
-    private static void Warning(string key, params object[] args)
-    {
-        var message = ModLocale.Log($"{LocaleKeyPre}{key}", args);
-        Log.Warning(message, Logger);
-    }
+    // private static void Warning(string key, params object[] args)
+    // {
+    //     var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
+    //     Log.Warning(message, Logger);
+    // }
 
     private static void Error(string key, params object[] args)
     {
-        var message = ModLocale.Log($"{LocaleKeyPre}{key}", args);
+        var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
         Log.Error(message, Logger);
     }
 }

@@ -12,8 +12,6 @@ namespace CustomFungamePack.Patch;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class TurretScriptPatch
 {
-    private static TurretData TurretData => FungameCheck.CurrentFungame?.TurretData;
-
     private static readonly FieldInfo BuildField = typeof(TurretScript).GetField(
         "build", BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -23,7 +21,12 @@ public class TurretScriptPatch
     private static readonly FieldInfo DidCountSoundField = typeof(TurretScript).GetField(
         "didcountsound", BindingFlags.NonPublic | BindingFlags.Instance);
 
-    private static float GetCooldown() => TurretData?.Cooldown ?? 15f;
+    private static TurretData TurretData => FungameCheck.CurrentFungame?.TurretData;
+
+    private static float GetCooldown()
+    {
+        return TurretData?.Cooldown ?? 15f;
+    }
 
     [HarmonyPatch("Update")]
     [HarmonyTranspiler]
@@ -33,16 +36,10 @@ public class TurretScriptPatch
             nameof(GetCooldown), BindingFlags.Static | BindingFlags.NonPublic);
 
         foreach (var instruction in instructions)
-        {
             if (instruction.opcode == OpCodes.Ldc_R4 && Mathf.Approximately((float)instruction.operand, 15f))
-            {
                 yield return new CodeInstruction(OpCodes.Call, getCooldownMethod);
-            }
             else
-            {
                 yield return instruction;
-            }
-        }
     }
 
     [HarmonyPatch("Update")]

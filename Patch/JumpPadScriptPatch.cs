@@ -11,8 +11,6 @@ namespace CustomFungamePack.Patch;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class JumpPadScriptPatch
 {
-    private static JumpPadData JumpPadData => FungameCheck.CurrentFungame?.JumpPadData;
-
     private static readonly FieldInfo CooldownField = typeof(JumpPadScript).GetField(
         "cooldown",
         BindingFlags.NonPublic | BindingFlags.Instance);
@@ -20,6 +18,8 @@ public class JumpPadScriptPatch
     private static readonly FieldInfo LightField = typeof(JumpPadScript).GetField(
         "light",
         BindingFlags.NonPublic | BindingFlags.Instance);
+
+    private static JumpPadData JumpPadData => FungameCheck.CurrentFungame?.JumpPadData;
 
     [HarmonyPatch("OnCollisionEnter2D")]
     [HarmonyPrefix]

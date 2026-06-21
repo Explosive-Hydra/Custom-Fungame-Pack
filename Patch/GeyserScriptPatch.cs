@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using CustomFungamePack.Data;
 using CustomFungamePack.Data.Feature.World;
 using HarmonyLib;
 using UnityEngine;
@@ -11,10 +10,10 @@ namespace CustomFungamePack.Patch;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class GeyserScriptPatch
 {
-    private static GeyserData GeyserData => FungameCheck.CurrentFungame?.GeyserData;
-
     private static readonly FieldInfo ActivateTimeField = typeof(GeyserScript).GetField(
         "activateTime", BindingFlags.NonPublic | BindingFlags.Instance);
+
+    private static GeyserData GeyserData => FungameCheck.CurrentFungame?.GeyserData;
 
     [HarmonyPatch("TryRumble")]
     [HarmonyPrefix]

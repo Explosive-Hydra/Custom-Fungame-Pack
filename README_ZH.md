@@ -468,7 +468,7 @@ Fungame 加载时执行游戏控制台命令。
 ```
 CustomFungamePack/
 ├── Plugin.cs                       # 主插件入口点（BepInEx）
-├── ModConfigs.cs                   # 静态配置访问器
+├── Plugin.cs                   # 静态配置访问器
 ├── ModLocale.cs                    # 插件级本地化（ModLocaleBase）
 ├── ModCommand.cs                   # fg 控制台命令处理器
 ├── Fungame.cs                      # Fungame 数据模型
@@ -535,7 +535,8 @@ CustomFungamePack/
 - **Bug 修复**：
     - 修复进入世界后方块透明的问题——添加了 [`WorldGeneration.UpdateWorld()`](Patch/WorldGenerationPatch.cs)
       刷新区块视觉显示。
-    - 修复 `fg reload` 和 `fg exit` 命令在 Fungame 加载期间无响应的问题——在清理阶段添加了 `generatingWorld = false`（[`WorldGenerationPatch.cs`](Patch/WorldGenerationPatch.cs)）。
+    - 修复 `fg reload` 和 `fg exit` 命令在 Fungame 加载期间无响应的问题——在清理阶段添加了 `generatingWorld = false`（[
+      `WorldGenerationPatch.cs`](Patch/WorldGenerationPatch.cs)）。
     - 修复进度显示在放置任何方块之前就显示 100% 的问题——在 [`RefreshLoadingText()`](Patch/WorldGenerationPatch.cs)
       中添加了除零保护及正确的初始化顺序。
 

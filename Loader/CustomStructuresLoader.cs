@@ -1,14 +1,13 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Bark.Tool;
 using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Logging;
-using MossLib.Tool;
 using Newtonsoft.Json.Linq;
-using UnityEngine;
 
 namespace CustomFungamePack.Loader;
 
@@ -16,8 +15,11 @@ namespace CustomFungamePack.Loader;
 public static class CustomStructuresLoader
 {
     private const string LocaleKeyPre = "custom_structures_loader.";
-    private static readonly ManualLogSource Logger = Plugin.Logger;
     private const string CustomStructuresGuid = "com.Jimmyking.morestructures";
+    private static readonly ManualLogSource Logger = Plugin.Logger;
+
+    private static readonly Regex V1NameRegex =
+        new("StructureDefinitions\\[\"(.*?)\"\\]", RegexOptions.Compiled);
 
     public static void SuppressAutoGeneration()
     {
@@ -73,19 +75,13 @@ public static class CustomStructuresLoader
         }
     }
 
-    private static readonly Regex V1NameRegex =
-        new("StructureDefinitions\\[\"(.*?)\"\\]", RegexOptions.Compiled);
-
     public static void SpawnCustomStructures(Fungame fungame)
     {
-        if (fungame == null || string.IsNullOrEmpty(fungame.CustomStructures))
-        {
-            return;
-        }
+        if (fungame == null || string.IsNullOrEmpty(fungame.CustomStructures)) return;
 
         try
         {
-            if (!Chainloader.PluginInfos.TryGetValue(CustomStructuresGuid, out PluginInfo targetPlugin))
+            if (!Chainloader.PluginInfos.TryGetValue(CustomStructuresGuid, out var targetPlugin))
             {
                 Error("not_found", "Custom Structures mod");
                 return;
@@ -112,7 +108,7 @@ public static class CustomStructuresLoader
             }
 
             var parseMethodName = isV2
-                ? "ParseAndRegisterV2" 
+                ? "ParseAndRegisterV2"
                 : "ParseAndRegister";
             var parseMethod = structureLoaderType.GetMethod(
                 parseMethodName,
@@ -191,25 +187,25 @@ public static class CustomStructuresLoader
 
     private static void MoreInfo(string key, params object[] args)
     {
-        if (ModConfigs.MoreLogs)
+        if (Plugin.MoreLogs)
             Info(key, args);
     }
 
     private static void Info(string key, params object[] args)
     {
-        var message = ModLocale.Log($"{LocaleKeyPre}{key}", args);
+        var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
         Log.Info(message, Logger);
     }
 
     private static void Warning(string key, params object[] args)
     {
-        var message = ModLocale.Log($"{LocaleKeyPre}{key}", args);
+        var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
         Log.Warning(message, Logger);
     }
 
     private static void Error(string key, params object[] args)
     {
-        var message = ModLocale.Log($"{LocaleKeyPre}{key}", args);
+        var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
         Log.Error(message, Logger);
     }
 }

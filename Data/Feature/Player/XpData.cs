@@ -14,6 +14,11 @@ public class XpData
 
     private static readonly int[] DefaultBaseLevels = Skills.BaseSkills(0);
 
+    public XpData()
+    {
+        ResetToDefaults();
+    }
+
     [JsonProperty("type")] public string Type { get; internal set; }
     [JsonProperty("str_xp")] public int StrXp { get; set; }
     [JsonProperty("res_xp")] public int ResXp { get; set; }
@@ -31,11 +36,6 @@ public class XpData
 
     [JsonProperty("min_int")] public int MinInt { get; set; }
     [JsonProperty("max_int")] public int MaxInt { get; set; }
-
-    public XpData()
-    {
-        ResetToDefaults();
-    }
 
     public void ResetToDefaults()
     {
@@ -69,5 +69,8 @@ public class XpData
         RecalculateMinMax();
     }
 
-    private static int ClampThreshold(int value) => Math.Max(0, value);
+    private static int ClampThreshold(int value)
+    {
+        return Math.Max(0, value);
+    }
 }

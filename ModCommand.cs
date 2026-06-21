@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -10,12 +10,14 @@ using CustomFungamePack.Data.Feature.World;
 using CustomFungamePack.Loader;
 using CustomFungamePack.Patch;
 using HarmonyLib;
-using MossLib.Base;
-using MossLib.Tool;
+using Bark.Base;
+using Bark.Tool;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
+using CUCoreLib.Registries;
 
 namespace CustomFungamePack;
 
@@ -537,7 +539,7 @@ public class ModCommand : ModCommandBase
     private static Fungame LoadOrCreateDefaultFungame(string targetPath)
     {
         if (string.IsNullOrWhiteSpace(targetPath))
-            throw new ArgumentException(ModLocale.Log("fungame_load.empty_target_path"), nameof(targetPath));
+            throw new ArgumentException(BetterLocale.Other("fungame_load.empty_target_path"), nameof(targetPath));
 
         var targetJsonPath = Path.Combine(targetPath, "fungame.json");
 
@@ -565,18 +567,18 @@ public class ModCommand : ModCommandBase
         }
         catch (UnauthorizedAccessException ex)
         {
-            Logger.LogWarning(ModLocale.Log("fungame_load.unauthorized", jsonPath, ex.Message));
+            Logger.LogWarning(BetterLocale.Other("fungame_load.unauthorized", jsonPath, ex.Message));
             return null;
         }
         catch (Exception ex) when (ex is IOException or PathTooLongException)
         {
-            Logger.LogWarning(ModLocale.Log("fungame_load.io_error", jsonPath, ex.Message));
+            Logger.LogWarning(BetterLocale.Other("fungame_load.io_error", jsonPath, ex.Message));
             return null;
         }
 
         if (string.IsNullOrWhiteSpace(json))
         {
-            Logger.LogWarning(ModLocale.Log("fungame_load.file_empty", jsonPath));
+            Logger.LogWarning(BetterLocale.Other("fungame_load.file_empty", jsonPath));
             return null;
         }
 
@@ -585,7 +587,7 @@ public class ModCommand : ModCommandBase
             var loaded = JsonConvert.DeserializeObject<Fungame>(json);
             if (loaded == null)
             {
-                Logger.LogWarning(ModLocale.Log("fungame_load.deserialize_null", jsonPath));
+                Logger.LogWarning(BetterLocale.Other("fungame_load.deserialize_null", jsonPath));
                 return null;
             }
 
@@ -594,7 +596,7 @@ public class ModCommand : ModCommandBase
         }
         catch (JsonException ex)
         {
-            Logger.LogWarning(ModLocale.Log("fungame_load.invalid_json", jsonPath, ex.Message));
+            Logger.LogWarning(BetterLocale.Other("fungame_load.invalid_json", jsonPath, ex.Message));
             return null;
         }
     }
@@ -614,7 +616,7 @@ public class ModCommand : ModCommandBase
                 Description = Fungame("save.as.default_description"),
                 DirectoryPath = targetPath
             };
-        Logger.LogWarning(ModLocale.Log("fungame_load.no_folder_name", targetPath));
+        Logger.LogWarning(BetterLocale.Other("fungame_load.no_folder_name", targetPath));
         return null;
 
     }
@@ -733,7 +735,7 @@ public class ModCommand : ModCommandBase
         // Delegate all file writing to SaveToDirectory (handles cleanup, defaults, naming)
         FungameDirectoryLoader.SaveToDirectory(fungame, directoryPath);
 
-        // 将名字/描述/作者写入当前语言文件
+        // ������/����/����д�뵱ǰ�����ļ�
         FungameLocale.SaveToCurrentLang(fungame, directoryPath);
 
         InfoFungame("save.area_success",
@@ -969,7 +971,7 @@ public class ModCommand : ModCommandBase
 
         if (parts.Length == 1)
         {
-            // Single-part feature name — toggle data objects (mine, jump_pad, etc.)
+            // Single-part feature name �� toggle data objects (mine, jump_pad, etc.)
             var dataProp = FindFungameFeatureProperty(parts[0]);
             if (dataProp == null)
             {
@@ -1165,7 +1167,7 @@ public class ModCommand : ModCommandBase
 
     private static string Locale(string key, params object[] args)
     {
-        return ModLocale.GetFormat(key, args);
+        return BetterLocale.Other(key, args);
     }
 
     private static string Command(string key, params object[] args)
@@ -1198,19 +1200,19 @@ public class ModCommand : ModCommandBase
 
     private static void Info(string key, params object[] args)
     {
-        var message = ModLocale.Log($"{LocaleKeyPre}{key}", args);
+        var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
         Log.Info(message, Logger);
     }
 
     private static void Error(string key, params object[] args)
     {
-        var message = ModLocale.Log($"{LocaleKeyPre}{key}", args);
+        var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
         Log.Error(message, Logger);
     }
 
     private static void Warning(string key, params object[] args)
     {
-        var message = ModLocale.Log($"{LocaleKeyPre}{key}", args);
+        var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
         Log.Warning(message, Logger);
     }
 
@@ -1241,3 +1243,5 @@ public class ModCommand : ModCommandBase
         }
     }
 }
+
+

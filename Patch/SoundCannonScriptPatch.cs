@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using CustomFungamePack.Data;
 using CustomFungamePack.Data.Feature.World;
 using HarmonyLib;
 using UnityEngine;
@@ -12,8 +11,6 @@ namespace CustomFungamePack.Patch;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class SoundCannonScriptPatch
 {
-    private static SoundCannonData SoundCannonData => FungameCheck.CurrentFungame?.SoundCannonData;
-
     private static readonly FieldInfo SpentField = typeof(SoundCannon).GetField(
         "spent", BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -24,6 +21,7 @@ public class SoundCannonScriptPatch
         "chargeTime", BindingFlags.NonPublic | BindingFlags.Instance);
 
     private static readonly Dictionary<SoundCannon, float> ChargingSince = new();
+    private static SoundCannonData SoundCannonData => FungameCheck.CurrentFungame?.SoundCannonData;
 
     [HarmonyPatch("Update")]
     [HarmonyPrefix]
@@ -59,11 +57,9 @@ public class SoundCannonScriptPatch
                 if (!ChargingSince.ContainsKey(__instance))
                     ChargingSince[__instance] = Time.time;
 
-                if (ChargingSince.TryGetValue(__instance, out float startTime) &&
+                if (ChargingSince.TryGetValue(__instance, out var startTime) &&
                     Time.time - startTime >= data.Cooldown)
-                {
                     ChargeTimeField?.SetValue(__instance, 5.1f);
-                }
             }
             else
             {

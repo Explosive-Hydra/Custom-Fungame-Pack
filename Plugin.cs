@@ -1,53 +1,32 @@
-using System.Collections.Generic;
+using System;
+using Bark.Constant;
+using Bark.Tool;
 using BepInEx;
-using BepInEx.Configuration;
 using BepInEx.Logging;
+using CUCoreLib.Data;
+using CUCoreLib.Registries;
 using CustomFungamePack.Data;
 using CustomFungamePack.Data.Feature.Player;
 using CustomFungamePack.Data.Feature.World;
-using CustomFungamePack.Lang;
 using HarmonyLib;
-using MossLib.Constant;
-using MossLib.Tool;
 
 namespace CustomFungamePack;
 
 [BepInPlugin(Guid, Name, Version)]
-[BepInDependency("org.explosivehydra.mosslib")]
+[BepInDependency("org.explosivehydra.Bark")]
 public class Plugin : BaseUnityPlugin
 {
     public const string Guid = "org.explosivehydra.customfungamepack";
     public const string Name = "Custom Fungame Pack";
-    public const string Version = "1.1.1";
+    public const string Version = "1.2.0";
 
     internal new static ManualLogSource Logger;
-    private readonly Harmony _harmony = new(Guid);
-    internal static readonly Dictionary<string, ConfigEntryBase> ConfigRegistry = new();
 
-    public static ConfigEntry<bool> MoreLogs;
-    public static ConfigEntry<bool> StartGameUseFungame;
-    public static ConfigEntry<string> FirstUseFungame;
-    public static ConfigEntry<int> ProgressUpdateInterval;
-
-    public void Awake()
-    {
-        Logger = base.Logger;
-
-        LocaleGenerator.SetLogger(Logger);
-        LocaleGenerator.Register(new EnLangGenerator(), Logger);
-        LocaleGenerator.Register(new ZhCnLangGenerator(), Logger);
-        LocaleGenerator.Register(new ZhTwLangGenerator(), Logger);
-        LocaleGenerator.GenerateAll();
-        ModLocale.Initialize(Logger);
-        _harmony.PatchAll();
-        FungameCheck.Initialize();
-
-        MoreLogs = RegisterConfigGeneral(Config, "more_logs", false);
-        StartGameUseFungame = RegisterConfigGeneral(Config, "start_game_use_fungame", false);
-        FirstUseFungame = RegisterConfigGeneral(Config, "first_use_fungame", TemplateFungame.Id);
-        ProgressUpdateInterval = RegisterConfigGeneral(Config, "progress_update_interval", 333);
-        ModConfigs.ReloadConfigs();
-    }
+    // Config values stored directly as static fields
+    public static bool MoreLogs;
+    public static bool StartGameUseFungame;
+    public static string FirstUseFungame;
+    public static int ProgressUpdateInterval;
 
     public static readonly Fungame TemplateFungame = new()
     {
@@ -233,7 +212,7 @@ public class Plugin : BaseUnityPlugin
         },
         XpData = new XpData
         {
-            // StrXp = 999,
+            StrXp = 999,
             ResXp = 999,
             IntXp = 999
         },
@@ -242,52 +221,125 @@ public class Plugin : BaseUnityPlugin
             SkipBackground = false
         }
     };
-    
-    private static ConfigEntry<T> RegisterConfigGeneral<T>(ConfigFile configFile, string key, T defaultValue)
+
+    private readonly Harmony _harmony = new(Guid);
+
+    public void Awake()
     {
-        return RegisterConfig(configFile, "General", key, defaultValue);
+        Logger = base.Logger;
+
+        // 使用 CUCoreLib 的本地化系统
+        // LocaleRegistry 会自动处理本地化文本
+        _harmony.PatchAll();
+        FungameCheck.Initialize();
+
+        // Register settings using CUCoreLib ModOptionsRegistry
+        RegisterSettings();
     }
 
-    private static ConfigEntry<T> RegisterConfig<T>(ConfigFile configFile, string section, string key, T defaultValue)
+    private static void RegisterSettings()
     {
-        var sectionPrefix = SectionToLocalePrefix(section);
-        return MossLib.Tool.Config.Register(configFile, section, key, defaultValue,
-            _ => Locale($"config.{sectionPrefix}.{key}.description"), ConfigRegistry);
+        // Register more_logs setting
+        RegisterBoolSetting(
+            "more_logs",
+            Setting.SettingCategory.Game,
+            false,
+            value => MoreLogs = value
+        );
+
+        // Register start_game_use_fungame setting
+        RegisterBoolSetting(
+            "start_game_use_fungame",
+            Setting.SettingCategory.Game,
+            false,
+            value => StartGameUseFungame = value
+        );
+
+        // Register first_use_fungame setting
+        RegisterDropdownSetting(
+            "first_use_fungame",
+            Setting.SettingCategory.Game,
+            0,
+            [new ModDropdownChoice("template", TemplateFungame.Id)],
+            _ => FirstUseFungame = TemplateFungame.Id
+        );
+
+        // Register progress_update_interval setting
+        RegisterIntSetting(
+            "progress_update_interval",
+            Setting.SettingCategory.Game,
+            333,
+            10,
+            1000,
+            value => ProgressUpdateInterval = value
+        );
     }
 
-    private static string SectionToLocalePrefix(string section)
+    private static string GetSettingId(string key, Setting.SettingCategory category)
     {
-        return section.ToLower().Replace(" - ", ".");
-    }
-    
-    public static object GetConfigValue(string key)
-    {
-        return ConfigRegistry.TryGetValue(key, out var entry)
-            ? entry.BoxedValue
-            : null;
+        return $"customfungamepack.{category.ToString().ToLowerInvariant()}.{key}";
     }
 
-    public static bool SetConfigValue(string key, object value)
+    private static void RegisterBoolSetting(
+        string key,
+        Setting.SettingCategory category,
+        bool defaultValue,
+        Action<bool> apply)
     {
-        if (!ConfigRegistry.TryGetValue(key, out var entry))
-            return false;
-
-        try
-        {
-            var converted = System.Convert.ChangeType(value, entry.SettingType);
-            entry.BoxedValue = converted;
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        var id = GetSettingId(key, category);
+        ModOptionsRegistry.Register(ModOptionDefinition.Bool(
+            id,
+            Locale($"config.{key}.name"),
+            Locale($"config.{key}.description"),
+            category,
+            defaultValue,
+            apply
+        ));
     }
 
-    public static bool HasConfig(string key) => ConfigRegistry.ContainsKey(key);
-
-    private static string Locale(string key)
+    private static void RegisterIntSetting(
+        string key,
+        Setting.SettingCategory category,
+        int defaultValue,
+        int min,
+        int max,
+        Action<int> apply)
     {
-        return ModLocale.GetFormat(key);
+        var id = GetSettingId(key, category);
+        ModOptionsRegistry.Register(ModOptionDefinition.Int(
+            id,
+            Locale($"config.{key}.name"),
+            Locale($"config.{key}.description"),
+            category,
+            defaultValue,
+            min,
+            max,
+            apply
+        ));
+    }
+
+    private static void RegisterDropdownSetting(
+        string key,
+        Setting.SettingCategory category,
+        int defaultValue,
+        ModDropdownChoice[] choices,
+        Action<int> apply)
+    {
+        var id = GetSettingId(key, category);
+        ModOptionsRegistry.Register(ModOptionDefinition.Dropdown(
+            id,
+            Locale($"config.{key}.name"),
+            Locale($"config.{key}.description"),
+            category,
+            defaultValue,
+            choices,
+            apply
+        ));
+    }
+
+    private static string Locale(string key, params object[] args)
+    {
+        var text = BetterLocale.Other("other", key, key);
+        return args.Length > 0 ? string.Format(text, args) : text;
     }
 }

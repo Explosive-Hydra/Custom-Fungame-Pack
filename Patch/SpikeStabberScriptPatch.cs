@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Bark.Tool;
 using CustomFungamePack.Data;
 using HarmonyLib;
-using MossLib.Tool;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -14,12 +14,11 @@ namespace CustomFungamePack.Patch;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class SpikeStabberScriptPatch
 {
-    private static SpikeStabberData SpikeStabberData => FungameCheck.CurrentFungame?.SpikeStabberData;
-
     private static readonly FieldInfo LightField = typeof(SpikeStabberScript).GetField(
         "light", BindingFlags.NonPublic | BindingFlags.Instance);
 
     private static readonly Dictionary<SpikeStabberScript, float> LastTriggerTime = new();
+    private static SpikeStabberData SpikeStabberData => FungameCheck.CurrentFungame?.SpikeStabberData;
 
     [HarmonyPatch("OnTriggerEnter2D")]
     [HarmonyPrefix]
@@ -37,7 +36,7 @@ public class SpikeStabberScriptPatch
                 __instance.sound = data.Sound;
 
             return !data.Undestroy || !(data.Cooldown > 0f) ||
-                   !LastTriggerTime.TryGetValue(__instance, out float lastTime) ||
+                   !LastTriggerTime.TryGetValue(__instance, out var lastTime) ||
                    !(Time.time - lastTime < data.Cooldown);
         }
         catch
@@ -58,7 +57,7 @@ public class SpikeStabberScriptPatch
             switch (data.Undestroy)
             {
                 case true when data.Cooldown > 0f &&
-                               LastTriggerTime.TryGetValue(__instance, out float lastTime) &&
+                               LastTriggerTime.TryGetValue(__instance, out var lastTime) &&
                                Time.time - lastTime < data.Cooldown:
                     return;
                 case true:

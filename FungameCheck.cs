@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Bark.Tool;
 using BepInEx.Logging;
 using CustomFungamePack.Loader;
 using CustomFungamePack.Patch;
@@ -10,8 +11,8 @@ namespace CustomFungamePack;
 
 public static class FungameCheck
 {
-    private static ManualLogSource _logger;
     private const string LocaleKeyPre = "fungame_check.";
+    private static ManualLogSource _logger;
     public static readonly string FungamesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Fungames");
     public static readonly List<string> ValidDirectories = [];
     public static readonly List<string> CheckFailDirectories = [];
@@ -21,7 +22,7 @@ public static class FungameCheck
 
     public static void Initialize()
     {
-        if (_logger != null) return; // 防止重复初始化
+        if (_logger != null) return; // 防止重复初始�?
         _logger = Plugin.Logger;
         LoadFungameDirectories();
     }
@@ -39,10 +40,7 @@ public static class FungameCheck
         foreach (var fungamesDirectory in directories)
         {
             var fungameJsonPath = Path.Combine(fungamesDirectory, "fungame.json");
-            if (!File.Exists(fungameJsonPath))
-            {
-                continue;
-            }
+            if (!File.Exists(fungameJsonPath)) continue;
 
             ValidDirectories.Add(fungamesDirectory);
         }
@@ -84,7 +82,7 @@ public static class FungameCheck
 
     private static string Locale(string key, params object[] args)
     {
-        return ModLocale.Log($"{LocaleKeyPre}{key}", args);
+        return BetterLocale.Other($"{LocaleKeyPre}{key}", args);
     }
 
     private static void UninitializedWarning(string key)

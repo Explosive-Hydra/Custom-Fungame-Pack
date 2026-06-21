@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Bark.Tool;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -31,20 +32,21 @@ public static class FungameLocale
 
     public static string GetFormatted(string formatKey, params object[] args)
     {
-        return ModLocale.GetFormat($"format.{formatKey}", args);
+        return BetterLocale.Other($"format.{formatKey}", args);
     }
 
     public static string GetFormattedNameVersion(Fungame fungame)
     {
-        return fungame == null 
-            ? string.Empty 
+        return fungame == null
+            ? string.Empty
             : $"{GetName(fungame)} v{fungame.Version ?? "1.0.0"}";
     }
 
     public static string GetFormattedAuthor(Fungame fungame)
     {
-        return fungame == null 
-            ? string.Empty : GetFormatted("author", GetAuthor(fungame));
+        return fungame == null
+            ? string.Empty
+            : GetFormatted("author", GetAuthor(fungame));
     }
 
     public static string GetFormattedInfo(Fungame fungame)
@@ -57,7 +59,7 @@ public static class FungameLocale
     public static string GetFormattedFeatures(Fungame fungame)
     {
         return fungame == null
-            ? string.Empty 
+            ? string.Empty
             : GetFormatted("features", fungame.ActiveFeatures);
     }
 
@@ -66,11 +68,13 @@ public static class FungameLocale
         var saveDir = directoryPath ?? fungame?.DirectoryPath;
         if (fungame == null || string.IsNullOrEmpty(saveDir))
         {
-            Plugin.Logger?.LogInfo($"[FungameLocale.Debug] SaveToCurrentLang skipped: fungame={(fungame == null ? "null" : $"DirectoryPath={fungame.DirectoryPath}")}, directoryPath={directoryPath}");
+            Plugin.Logger?.LogInfo(
+                $"[FungameLocale.Debug] SaveToCurrentLang skipped: fungame={(fungame == null ? "null" : $"DirectoryPath={fungame.DirectoryPath}")}, directoryPath={directoryPath}");
             return;
         }
 
-        Plugin.Logger?.LogInfo($"[FungameLocale.Debug] SaveToCurrentLang start: saveDir={saveDir}, Name={fungame.Name}, Desc={fungame.Description}");
+        Plugin.Logger?.LogInfo(
+            $"[FungameLocale.Debug] SaveToCurrentLang start: saveDir={saveDir}, Name={fungame.Name}, Desc={fungame.Description}");
 
         try
         {
@@ -94,10 +98,12 @@ public static class FungameLocale
                 langJson = new JObject();
             }
 
-            // 获取或创建 fungame 对象
+            // 获取或创�?fungame 对象
             JObject fungameObj;
             if (langJson[FungameType] is JObject existing)
+            {
                 fungameObj = existing;
+            }
             else
             {
                 fungameObj = new JObject();

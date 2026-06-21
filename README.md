@@ -53,12 +53,13 @@ logic.
 ## Installation
 
 1. Install [BepInEx 5.x](https://github.com/BepInEx/BepInEx) for Casualties Unknown.
-2. Install [Moss Lib](https://github.com/Explosive-Hydra/Moss-Lib).
-3. Download the latest release from the [Releases](https://github.com/Explosive-Hydra/Custom-Fungame-Pack/releases)
+2. Install [Bark](https://github.com/CNCUMC/Bark).
+3. Install [CUCoreLib](https://github.com/jimmyking9999999/CUCoreLib).
+4. Download the latest release from the [Releases](https://github.com/Explosive-Hydra/Custom-Fungame-Pack/releases)
    page.
-4. Extract the downloaded archive and place the entire `Custom Fungame Pack` folder into your `BepInEx/plugins/` folder.
-5. Create a `Fungames/` folder in your game's root directory (next to `CasualtiesUnknown.exe`).
-6. Place your Fungame folders inside `Fungames/` (see [Fungame Directory Structure](#fungame-directory-structure)).
+5. Extract the downloaded archive and place the entire `Custom Fungame Pack` folder into your `BepInEx/plugins/` folder.
+6. Create a `Fungames/` folder in your game's root directory (next to `CasualtiesUnknown.exe`).
+7. Place your Fungame folders inside `Fungames/` (see [Fungame Directory Structure](#fungame-directory-structure)).
 
 ### Folder Structure
 
@@ -66,8 +67,10 @@ logic.
 Casualties Unknown Demo/
 ├── BepInEx/
 │   └── plugins/
-│       ├── Moss Lib
-│       │   └── Moss Lib.dll
+│       ├── Bark
+│       │   └── Bark.dll
+│       ├── CUCoreLib
+│       │   └── CUCoreLib.dll
 │       └── Custom Fungame Pack
 │           ├── Lang/                  # Auto-generated locale files
 │           ├── CustomFungamePack.dll
@@ -92,14 +95,14 @@ Casualties Unknown Demo/
 
 ## Config Options
 
-Configure via `BepInEx/config/blackmoss.customfungamepack.cfg`:
+Configure via the in-game options menu (CUCoreLib ModOptionsRegistry).
 
 | Key                        | Type     | Default    | Description                                                                                 |
 |----------------------------|----------|------------|---------------------------------------------------------------------------------------------|
 | `more_logs`                | `bool`   | `false`    | Enable verbose logging                                                                      |
-| `start_use_fungame`        | `bool`   | `false`    | Automatically load a Fungame on new game start                                              |
-| `first_use_fungame`        | `string` | `template` | Fungame ID to load when `Start Use Fungame` is enabled                                      |
-| `progress_update_interval` | `int`    | `30`       | Number of blocks between progress text updates during map generation (lower = more updates) |
+| `start_game_use_fungame`   | `bool`   | `false`    | Automatically load a Fungame on new game start                                              |
+| `first_use_fungame`        | `string` | `template` | Fungame ID to load when `Start Game Use Fungame` is enabled                                 |
+| `progress_update_interval` | `int`    | `333`      | Number of blocks between progress text updates during map generation (lower = more updates) |
 
 ---
 
@@ -472,7 +475,7 @@ When displaying a Fungame's name or description, the system:
 ```
 CustomFungamePack/
 ├── Plugin.cs                       # Main plugin entry point (BepInEx)
-├── ModConfigs.cs                   # Static config accessors
+├── Plugin.cs                   # Static config accessors
 ├── ModLocale.cs                    # Plugin-wide localization (ModLocaleBase)
 ├── ModCommand.cs                   # fg console command handler
 ├── Fungame.cs                      # Fungame data model
@@ -539,10 +542,12 @@ CustomFungamePack/
 - **Configurable update interval**: Added [`progress_update_interval`](#config-options) config option (default: `30`) to
   control the number of blocks placed between progress text updates (lower = more frequent updates).
 - **Bug fixes**:
-    - Fixed blocks appearing transparent after entering the world — added [`WorldGeneration.UpdateWorld()`](Patch/WorldGenerationPatch.cs) to refresh chunk visuals.
+    - Fixed blocks appearing transparent after entering the world — added [
+      `WorldGeneration.UpdateWorld()`](Patch/WorldGenerationPatch.cs) to refresh chunk visuals.
     - Fixed `fg reload` and `fg exit` commands not responding during Fungame loading — added `generatingWorld = false`
       in cleanup phase ([`WorldGenerationPatch.cs`](Patch/WorldGenerationPatch.cs)).
-    - Fixed progress display showing 100% before any blocks were placed — added safety checks in [`RefreshLoadingText()`](Patch/WorldGenerationPatch.cs) for division-by-zero and proper initialization order.
+    - Fixed progress display showing 100% before any blocks were placed — added safety checks in [
+      `RefreshLoadingText()`](Patch/WorldGenerationPatch.cs) for division-by-zero and proper initialization order.
 
 ### v1.0.1 — Bug fixes and locale improvements
 

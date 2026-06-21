@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Bark.Constant;
 using CustomFungamePack.Data.Feature.World;
 using HarmonyLib;
-using MossLib.Constant;
 using UnityEngine;
 
 namespace CustomFungamePack.Patch;
@@ -11,8 +11,6 @@ namespace CustomFungamePack.Patch;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public static class BodyPatch
 {
-    private static WorldSettingsData WorldSettings => FungameCheck.CurrentFungame?.WorldSettingsData;
-
     private static readonly FieldInfo JumpCooldownField = typeof(Body).GetField(
         "jumpCooldown",
         BindingFlags.NonPublic | BindingFlags.Instance);
@@ -21,14 +19,15 @@ public static class BodyPatch
         "firstWallJump",
         BindingFlags.NonPublic | BindingFlags.Instance);
 
+    private static int _jumpCount;
+    private static int _climbCount;
+    private static WorldSettingsData WorldSettings => FungameCheck.CurrentFungame?.WorldSettingsData;
+
     private static bool IsPatchActive => WorldSettings != null
                                          && JumpCooldownField != null
                                          && FirstWallJumpField != null;
 
     private static bool JumpKey => Input.GetKeyDown(Keys.Jump);
-
-    private static int _jumpCount;
-    private static int _climbCount;
 
     [HarmonyPostfix]
     [HarmonyPatch("Update")]
@@ -67,10 +66,7 @@ public static class BodyPatch
     private static void HandleMultiClimb(Body __instance)
     {
         // // 落地
-        if (__instance.grounded)
-        {
-            return;
-        }
+        if (__instance.grounded) return;
 
         // 没按跳 到头了
         if (!JumpKey || _climbCount >= WorldSettings.ClimbLimit)
