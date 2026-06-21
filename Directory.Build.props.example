@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <BaseGamePath>F:\SteamLibrary\steamapps\common\Casualties Unknown Demo</BaseGamePath>
+    <!-- <GameManagedDir>$(BaseGamePath)\CasualtiesUnknown_Data\Managed</GameManagedDir> -->
+    <!-- <AssemblyCSharpPath>$(GameManagedDir)\Assembly-CSharp.dll</AssemblyCSharpPath> -->
+    <!-- <BepInExDir>$(BaseGamePath)\BepInEx</BepInExDir> -->
+  </PropertyGroup>
+</Project>
