@@ -4,29 +4,29 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Bark.Tool;
 using BepInEx.Logging;
+using CUCoreLib.Registries;
 using CustomFungamePack.Data;
 using CustomFungamePack.Data.Feature.World;
 using CustomFungamePack.Loader;
 using CustomFungamePack.Patch;
 using HarmonyLib;
-using Bark.Tool;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using CUCoreLib.Registries;
 
 namespace CustomFungamePack;
 
 [HarmonyPatch(typeof(ConsoleScript))]
 public class ModCommand
 {
-    private static readonly ManualLogSource Logger = Plugin.Logger;
     private const string LocaleKeyPre = "mod_command.";
 
-    private static bool _autofillRegistered;
-
     private const string DefaultVersion = "1.0.0";
+    private static readonly ManualLogSource Logger = Plugin.Logger;
+
+    private static bool _autofillRegistered;
     private static readonly List<string> DefaultAuthor = ["Unknown"];
 
     [HarmonyPatch("RegisterAllCommands")]
@@ -121,15 +121,12 @@ public class ModCommand
     private static void ExecuteFungameCommand(string[] args)
     {
         if (args.Length == 1)
-        {
-            InfoFungame("help");
-        }
+            PrintHelp();
         else
-        {
             switch (args[1])
             {
                 case "help":
-                    InfoFungame("help");
+                    PrintHelp();
                     break;
                 case "reload":
                     if (!EnsureWorldLoaded()) return;
@@ -170,7 +167,6 @@ public class ModCommand
                     HandleExit(args);
                     break;
             }
-        }
     }
 
     private static void HandleWaypoint(string[] args)
@@ -362,9 +358,7 @@ public class ModCommand
                  let folderName = Path.GetFileName(dir)
                  where string.Equals(folderName, targetName, StringComparison.OrdinalIgnoreCase)
                  select dir)
-        {
             return dir;
-        }
 
         var directPath = Path.Combine(FungameCheck.FungamesPath, targetName);
         if (!Directory.Exists(directPath))
@@ -496,10 +490,7 @@ public class ModCommand
         }
 
         var blockIds = new ushort[regionW][];
-        for (var index = 0; index < regionW; index++)
-        {
-            blockIds[index] = new ushort[regionH];
-        }
+        for (var index = 0; index < regionW; index++) blockIds[index] = new ushort[regionH];
 
         var uniqueBlockIds = new List<ushort>();
         var blockToChar = new Dictionary<ushort, string>();
@@ -508,19 +499,17 @@ public class ModCommand
         blockToChar[0] = "0";
 
         for (var x = 0; x < regionW; x++)
+        for (var y = 0; y < regionH; y++)
         {
-            for (var y = 0; y < regionH; y++)
-            {
-                var bx = cMinX + x;
-                var by = cMaxY - y;
-                var id = world.GetBlock(new Vector2Int(bx, by));
+            var bx = cMinX + x;
+            var by = cMaxY - y;
+            var id = world.GetBlock(new Vector2Int(bx, by));
 
-                blockIds[x][y] = id;
+            blockIds[x][y] = id;
 
-                if (id <= 0 || blockToChar.ContainsKey(id)) continue;
-                blockToChar[id] = EncodeBlockIndex(uniqueBlockIds.Count);
-                uniqueBlockIds.Add(id);
-            }
+            if (id <= 0 || blockToChar.ContainsKey(id)) continue;
+            blockToChar[id] = EncodeBlockIndex(uniqueBlockIds.Count);
+            uniqueBlockIds.Add(id);
         }
 
         var mapRows = new string[regionH];
@@ -539,10 +528,7 @@ public class ModCommand
         }
 
         var keyDict = new Dictionary<string, object>();
-        for (var i = 0; i < uniqueBlockIds.Count; i++)
-        {
-            keyDict[EncodeBlockIndex(i)] = (long)uniqueBlockIds[i];
-        }
+        for (var i = 0; i < uniqueBlockIds.Count; i++) keyDict[EncodeBlockIndex(i)] = (long)uniqueBlockIds[i];
 
         var newLevel = fungame.CurrentLevel != null
             ? new LevelData
@@ -969,7 +955,29 @@ public class ModCommand
             MapLoader.LogMapInfo();
         }
         else
+        {
             InfoFungame("select.without_world", FungameLocale.GetName(fungame));
+        }
+    }
+
+    private static void PrintHelp()
+    {
+        var helpItems = new List<(string key, string value)>
+        {
+            ("help", Fungame("help.help")),
+            ("reload", Fungame("help.reload")),
+            ("info", Fungame("help.info")),
+            ("spawn", Fungame("help.spawn")),
+            ("select", Fungame("help.select")),
+            ("list", Fungame("help.list")),
+            ("feature", Fungame("help.feature")),
+            ("waypoint", Fungame("help.waypoint")),
+            ("save", Fungame("help.save")),
+            ("exit", Fungame("help.exit"))
+        };
+
+        var header = Fungame("help.header");
+        Log.PrintKeyValueList(header, helpItems, Logger);
     }
 
     private static void CheckArg(string[] args, int index)

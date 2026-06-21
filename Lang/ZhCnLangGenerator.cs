@@ -8,15 +8,15 @@ public class ZhCnLangGenerator : ModLangGenBase
 
     protected override void BuildLocaleData()
     {
-        // Config
-        Add("config.general.more_logs.name", "更多日志");
-        Add("config.general.more_logs.description", "显示更多日志");
-        Add("config.general.start_game_use_fungame.name", "开始游戏使用 Fungame");
-        Add("config.general.start_game_use_fungame.description", "开启新游戏时使用选中的 Fungame");
-        Add("config.general.first_use_fungame.name", "首选 Fungame");
-        Add("config.general.first_use_fungame.description", "开始新游戏时使用的 Fungame ID。需要启用\"开始游戏使用 Fungame\"");
-        Add("config.general.progress_update_interval.name", "进度更新间隔");
-        Add("config.general.progress_update_interval.description", "放置方块时每 N 个方块更新一次进度显示。数值越小更新越频繁，但可能影响生成性能");
+        // Config - 设置标签和描述
+        Add("customfungamepack.more_logs", "更多日志");
+        Add("customfungamepack.more_logsdsc", "显示更多日志");
+        Add("customfungamepack.start_game_use_fungame", "开始游戏使用 Fungame");
+        Add("customfungamepack.start_game_use_fungamedsc", "开启新游戏时使用选中的 Fungame");
+        Add("customfungamepack.first_use_fungame", "首选 Fungame");
+        Add("customfungamepack.first_use_fungamedsc", "开始新游戏时使用的 Fungame ID。需要启用\"开始游戏使用 Fungame\"");
+        Add("customfungamepack.progress_update_interval", "进度更新间隔");
+        Add("customfungamepack.progress_update_intervaldsc", "放置方块时每 N 个方块更新一次进度显示。数值越小更新越频繁，但可能影响生成性能");
 
         // Fungame Format
         Add("format.author", "作者: {0}");
@@ -88,16 +88,18 @@ public class ZhCnLangGenerator : ModLangGenBase
         Add("command.fungame.description", "Fungame 的相关指令");
         Add("command.fungame.string", "选择功能");
         Add("command.fungame.parameter", "功能参数");
-        Add("command.fungame.help", "可用子命令:\n  " +
-                                    "reload  - 重新加载当前地图\n  " +
-                                    "info    - 显示地图信息\n  " +
-                                    "spawn   - 传送回出生点\n  " +
-                                    "select  - 选择 Fungame\n  " +
-                                    "list    - 列出所有 Fungame\n  " +
-                                    "feature - 管理特性\n  " +
-                                    "waypoint- 管理路径点 (list/get)\n  " +
-                                    "save    - 保存当前Fungame到本地\n  " +
-                                    "save as - 交互式选取区域并保存为地图数据");
+        Add("command.fungame.help.header", "可用子命令:");
+        Add("command.fungame.help.help", "显示此帮助信息");
+        Add("command.fungame.help.reload", "重新加载当前地图");
+        Add("command.fungame.help.info", "显示地图信息");
+        Add("command.fungame.help.spawn", "传送回出生点");
+        Add("command.fungame.help.select", "选择 Fungame");
+        Add("command.fungame.help.list", "列出所有 Fungame");
+        Add("command.fungame.help.feature", "管理特性");
+        Add("command.fungame.help.waypoint", "管理路径点 (list/get)");
+        Add("command.fungame.help.save", "保存当前 Fungame");
+        Add("command.fungame.help.save_as", "交互式选取区域并保存为地图数据");
+        Add("command.fungame.help.exit", "退出 Fungame");
 
         // Command - Fungame - Info
         Add("command.fungame.info.name", "名称: {0}");

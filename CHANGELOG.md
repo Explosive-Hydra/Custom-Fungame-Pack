@@ -4,7 +4,8 @@ Dependency Migration
 
 ### Change
 
-* Migrated to [CUCoreLib](https://github.com/jimmyking9999999/CUCoreLib) and [Bark](https://github.com/CNCUMC/Bark) as dependencies
+* Migrated to [CUCoreLib](https://github.com/jimmyking9999999/CUCoreLib) and [Bark](https://github.com/CNCUMC/Bark) as
+  dependencies
 * Removed MossLib dependency
 * Configuration system migrated to CUCoreLib ModOptionsRegistry (settings now appear in game's native options menu)
 * Localization system migrated to CUCoreLib LocaleRegistry + Bark.Tool.BetterLocale

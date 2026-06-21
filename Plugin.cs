@@ -8,6 +8,7 @@ using CUCoreLib.Registries;
 using CustomFungamePack.Data;
 using CustomFungamePack.Data.Feature.Player;
 using CustomFungamePack.Data.Feature.World;
+using CustomFungamePack.Lang;
 using HarmonyLib;
 
 namespace CustomFungamePack;
@@ -228,8 +229,12 @@ public class Plugin : BaseUnityPlugin
     {
         Logger = base.Logger;
 
-        // 使用 CUCoreLib 的本地化系统
-        // LocaleRegistry 会自动处理本地化文本
+        LocaleGenerator.SetLogger(Logger);
+        LocaleGenerator.Register(new EnLangGenerator(), Logger);
+        LocaleGenerator.Register(new ZhCnLangGenerator(), Logger);
+        LocaleGenerator.Register(new ZhTwLangGenerator(), Logger);
+        LocaleGenerator.GenerateAll();
+
         _harmony.PatchAll();
         FungameCheck.Initialize();
 
@@ -289,8 +294,8 @@ public class Plugin : BaseUnityPlugin
         var id = GetSettingId(key, category);
         ModOptionsRegistry.Register(ModOptionDefinition.Bool(
             id,
-            Locale($"config.{key}.name"),
-            Locale($"config.{key}.description"),
+            Locale("other", $"customfungamepack.{key}", key),
+            Locale("other", $"customfungamepack.{key}dsc", $"{key} description"),
             category,
             defaultValue,
             apply
@@ -308,8 +313,8 @@ public class Plugin : BaseUnityPlugin
         var id = GetSettingId(key, category);
         ModOptionsRegistry.Register(ModOptionDefinition.Int(
             id,
-            Locale($"config.{key}.name"),
-            Locale($"config.{key}.description"),
+            Locale("other", $"customfungamepack.{key}", key),
+            Locale("other", $"customfungamepack.{key}dsc", $"{key} description"),
             category,
             defaultValue,
             min,
@@ -328,8 +333,8 @@ public class Plugin : BaseUnityPlugin
         var id = GetSettingId(key, category);
         ModOptionsRegistry.Register(ModOptionDefinition.Dropdown(
             id,
-            Locale($"config.{key}.name"),
-            Locale($"config.{key}.description"),
+            Locale("other", $"customfungamepack.{key}", key),
+            Locale("other", $"customfungamepack.{key}dsc", $"{key} description"),
             category,
             defaultValue,
             choices,

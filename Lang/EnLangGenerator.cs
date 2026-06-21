@@ -8,16 +8,16 @@ public class EnLangGenerator : ModLangGenBase
 
     protected override void BuildLocaleData()
     {
-        // Config
-        Add("config.general.more_logs.name", "More logs");
-        Add("config.general.more_logs.description", "Display more logs");
-        Add("config.general.start_game_use_fungame.name", "Start game use fungame");
-        Add("config.general.start_game_use_fungame.description", "Use the selected Fungame when starting a new game.");
-        Add("config.general.first_use_fungame.name", "First use fungame");
-        Add("config.general.first_use_fungame.description",
+        // Config - Settings labels and descriptions
+        Add("customfungamepack.more_logs", "More logs");
+        Add("customfungamepack.more_logsdsc", "Display more logs");
+        Add("customfungamepack.start_game_use_fungame", "Start game use fungame");
+        Add("customfungamepack.start_game_use_fungamedsc", "Use the selected Fungame when starting a new game.");
+        Add("customfungamepack.first_use_fungame", "First use fungame");
+        Add("customfungamepack.first_use_fungamedsc",
             "The Fungame ID to use when starting a new game. Requires 'Start Use Fungame' to be enabled.");
-        Add("config.general.progress_update_interval.name", "Progress update interval");
-        Add("config.general.progress_update_interval.description",
+        Add("customfungamepack.progress_update_interval", "Progress update interval");
+        Add("customfungamepack.progress_update_intervaldsc",
             "Number of blocks between progress text updates during map generation. Lower values update more frequently but may impact performance.");
 
         // Fungame Format
@@ -90,16 +90,18 @@ public class EnLangGenerator : ModLangGenBase
         Add("command.fungame.description", "Fungame related commands");
         Add("command.fungame.string", "Select function");
         Add("command.fungame.parameter", "Function parameter");
-        Add("command.fungame.help", "Available subcommands:\n  " +
-                                    "reload  - Reload current map\n  " +
-                                    "info    - Show map info\n  " +
-                                    "spawn   - Teleport to spawn\n  " +
-                                    "select  - Select a Fungame\n  " +
-                                    "list    - List all Fungames\n  " +
-                                    "feature - Manage features\n  " +
-                                    "waypoint- Manage waypoints (list/get)\n  " +
-                                    "save    - Save current Fungame to local file\n  " +
-                                    "save as - Interactively select area and save as map data");
+        Add("command.fungame.help.header", "Available subcommands:");
+        Add("command.fungame.help.help", "Show this help message");
+        Add("command.fungame.help.reload", "Reload current map");
+        Add("command.fungame.help.info", "Show map info");
+        Add("command.fungame.help.spawn", "Teleport to spawn");
+        Add("command.fungame.help.select", "Select a Fungame");
+        Add("command.fungame.help.list", "List all Fungames");
+        Add("command.fungame.help.feature", "Manage features");
+        Add("command.fungame.help.waypoint", "Manage waypoints (list/get)");
+        Add("command.fungame.help.save", "Save current Fungame");
+        Add("command.fungame.help.save_as", "Interactively select area and save as map data");
+        Add("command.fungame.help.exit", "Exit Fungame");
 
         // Command - Fungame - Info
         Add("command.fungame.info.name", "Name: {0}");
