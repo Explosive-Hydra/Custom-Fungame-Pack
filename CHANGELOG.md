@@ -1,19 +1,20 @@
 ## 1.2.0
 
-依赖库迁移
+Dependency Migration
 
 ### Change
 
-* 迁移到 [CUCoreLib](https://github.com/jimmyking9999999/CUCoreLib) 和 [Bark](https://github.com/CNCUMC/Bark) 作为依赖
-* 移除 MossLib 依赖
-* 配置系统迁移到 CUCoreLib ModOptionsRegistry，设置项现在显示在游戏原生选项菜单中
-* 本地化系统迁移到 CUCoreLib LocaleRegistry + Bark.Tool.BetterLocale
-* ModCommand 重构：使用 CUCoreLib ConsoleCommandRegistry 替代 Bark.Base.ModCommandBase
-* 添加 Directory.Build.props.example 作为开发者配置模板
-* 更新 .gitignore 添加 Directory.Build.props（本地配置不提交）
+* Migrated to [CUCoreLib](https://github.com/jimmyking9999999/CUCoreLib) and [Bark](https://github.com/CNCUMC/Bark) as dependencies
+* Removed MossLib dependency
+* Configuration system migrated to CUCoreLib ModOptionsRegistry (settings now appear in game's native options menu)
+* Localization system migrated to CUCoreLib LocaleRegistry + Bark.Tool.BetterLocale
+* ModCommand refactored: Using CUCoreLib ConsoleCommandRegistry instead of Bark.Base.ModCommandBase
+* ModCommand list output updated to use Bark.Tool.Log (PrintNumberedList, PrintGroupedList)
+* Added Directory.Build.props.example as developer configuration template
+* Updated .gitignore to add Directory.Build.props (local config not committed)
 
 ### Fix
 
-* 修复力量经验太高导致打物块有超级后坐力的问题
-* 修复经验值达到最大值时游戏卡死的问题
-* 修复 XpData 子属性（str_xp, res_xp, int_xp 等）缺少翻译键的问题
+* Fixed high strength XP causing excessive recoil when hitting blocks
+* Fixed game freeze when XP reaches maximum value
+* Fixed missing translation keys for XpData child properties (str_xp, res_xp, int_xp, etc.)
