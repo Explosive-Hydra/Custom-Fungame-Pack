@@ -217,7 +217,7 @@ public static class MapLoader
             .Sum(mapRow => mapRow.Count(c => c != ' '));
 
         WorldGenerationPatch.TotalBlocks = totalBlocks;
-        WorldGenerationPatch._isSpawningMap = true; // ˫�ر��գ�ȷ??TotalBlocks ���ú�����ðٷֱ���??
+        WorldGenerationPatch._isSpawningMap = true;
 
         var successCount = 0;
         var failCount = 0;
@@ -353,7 +353,7 @@ public static class MapLoader
     {
         try
         {
-            World.PlaceBlock(x, y, (ushort)blockId);
+            GameWorld.PlaceBlock(x, y, (ushort)blockId);
             blockCount++;
         }
         catch (Exception ex)
@@ -367,7 +367,7 @@ public static class MapLoader
     {
         try
         {
-            World.PlaceItem(x, y, id);
+            GameWorld.PlaceItem(x, y, id);
         }
         catch (Exception ex)
         {
@@ -441,11 +441,11 @@ public static class MapLoader
 
             Vector2Int localPos = new(x, y);
             if (backgrounds.TryGetValue(localPos, out var bgId))
-                World.PlaceBackground(new Vector2Int(worldX, worldY), bgId);
+                GameWorld.PlaceBackground(new Vector2Int(worldX, worldY), bgId);
         }
 
         MoreLogs("build_mode_save_applied", blockCount, liquidCount, bgCount, failCount);
-        for (var i = 0; i < 5; i++) Player.Tp(FungameCheck.CurrentFungame.SpawnPosition);
+        for (var i = 0; i < 5; i++) GamePlayer.Tp(FungameCheck.CurrentFungame.SpawnPosition);
 
         PickItems(FungameCheck.CurrentFungame);
     }
@@ -503,7 +503,7 @@ public static class MapLoader
             return;
         }
 
-        World.CheckForWorld();
+        GameWorld.CheckForWorld();
         Log.Divider();
         try
         {
@@ -586,7 +586,7 @@ public static class MapLoader
     private static void PickItems(Fungame fungame)
     {
         var items = fungame.Items;
-        foreach (var item in items) Player.PickItem(item.Id, item.Slot, item.Force);
+        foreach (var item in items) GamePlayer.PickItem(item.Id, item.Slot, item.Force);
     }
 
     private static void LogConsole(string key, params object[] args)

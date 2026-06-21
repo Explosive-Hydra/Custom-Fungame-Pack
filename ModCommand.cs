@@ -10,27 +10,24 @@ using CustomFungamePack.Data.Feature.World;
 using CustomFungamePack.Loader;
 using CustomFungamePack.Patch;
 using HarmonyLib;
-using Bark.Base;
 using Bark.Tool;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
 using CUCoreLib.Registries;
 
 namespace CustomFungamePack;
 
 [HarmonyPatch(typeof(ConsoleScript))]
-public class ModCommand : ModCommandBase
+public class ModCommand
 {
-    private new static readonly ManualLogSource Logger = Plugin.Logger;
+    private static readonly ManualLogSource Logger = Plugin.Logger;
     private const string LocaleKeyPre = "mod_command.";
 
     private static bool _autofillRegistered;
-    private static List<string> _cachedFeatureNames = [];
-    private static List<string> _cachedFungameIds = [];
-    private static List<string> _cachedConfigs = [];
+
+    private const string DefaultVersion = "1.0.0";
+    private static readonly List<string> DefaultAuthor = ["Unknown"];
 
     [HarmonyPatch("RegisterAllCommands")]
     [HarmonyPostfix]
@@ -65,20 +62,20 @@ public class ModCommand : ModCommandBase
                 ("string", Fungame("parameter"))
             };
 
-            ConsoleScript.Commands.Add(new Command(
+            ConsoleCommandRegistry.Register(
                 "fungame",
                 Fungame("description"),
                 ExecuteFungameCommand,
                 argAutofill,
-                paramDescriptions)
+                paramDescriptions
             );
 
-            ConsoleScript.Commands.Add(new Command(
+            ConsoleCommandRegistry.Register(
                 "fg",
                 Fungame("description"),
                 ExecuteFungameCommand,
                 new Dictionary<int, List<string>>(argAutofill),
-                paramDescriptions)
+                paramDescriptions
             );
 
             RegisterDynamicAutoFills();
@@ -94,20 +91,6 @@ public class ModCommand : ModCommandBase
         if (_autofillRegistered)
             return;
 
-        var targetCommands = ConsoleScript.Commands
-            .Where(c => c != null && c.action == ExecuteFungameCommand)
-            .ToList();
-
-        if (targetCommands.Count == 0)
-            return;
-
-        var fungameIds = FungameCheck.Fungames?
-            .Where(f => f != null)
-            .Select(f => f.Id)
-            .Where(name => !string.IsNullOrEmpty(name))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
         var allNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         AddFeatureSubProperties<WorldSettingsData>("world_settings", allNames);
@@ -118,11 +101,6 @@ public class ModCommand : ModCommandBase
         AddFeatureSubProperties<SpikeStabberData>("spike_stabber", allNames);
         AddFeatureSubProperties<GeyserData>("geyser", allNames);
         AddFeatureSubProperties<BearTrapData>("beartrap", allNames);
-
-        var featureNames = allNames.ToList();
-
-        _cachedFeatureNames = featureNames;
-        _cachedFungameIds = fungameIds ?? [];
 
         _autofillRegistered = true;
     }
@@ -138,70 +116,6 @@ public class ModCommand : ModCommandBase
             var subJson = subProp.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName ?? subProp.Name;
             names.Add($"{baseName}.{subJson}".ToLowerInvariant());
         }
-    }
-
-    [HarmonyPatch("HandleDescriptionText")]
-    [HarmonyPrefix]
-    private static void PreHandleDescriptionText(string[] args)
-    {
-        UpdateAutofillContext(args);
-    }
-
-    [HarmonyPatch("TryFinishCommandPart")]
-    [HarmonyPrefix]
-    private static void PreTryFinishCommandPart(string[] args)
-    {
-        UpdateAutofillContext(args);
-    }
-
-    private static void UpdateAutofillContext(string[] args)
-    {
-        if (args == null || args.Length < 2)
-            return;
-
-        var cmdName = args[0];
-        if (cmdName != "fungame" && cmdName != "fg")
-            return;
-
-        var cmd = ConsoleScript.SearchExact(cmdName);
-        if (cmd?.argAutofill == null)
-            return;
-
-        var key = args.Length - 2;
-        if (key != 1)
-            return;
-
-        var contextList = new List<string>();
-        var subcommand = args[1].ToLower();
-
-        switch (subcommand)
-        {
-            case "feature":
-                contextList.AddRange(_cachedFeatureNames);
-                break;
-            case "select":
-            case "list":
-                if (_cachedFungameIds.Count > 0)
-                    contextList.AddRange(_cachedFungameIds);
-                break;
-            case "waypoint":
-                contextList.AddRange(["list", "get"]);
-                break;
-            case "save":
-                contextList.Add("as");
-                if (_cachedFungameIds is { Count: > 0 })
-                    contextList.AddRange(_cachedFungameIds);
-                break;
-            case "config":
-                contextList.AddRange(
-                    Plugin.ConfigRegistry.Select(config => config.Key));
-                break;
-            case "exit":
-                contextList.AddRange(["tutorial", "none"]);
-                break;
-        }
-
-        cmd.argAutofill[key] = contextList;
     }
 
     private static void ExecuteFungameCommand(string[] args)
@@ -252,80 +166,11 @@ public class ModCommand : ModCommandBase
                 case "save":
                     HandleSave(args);
                     break;
-                case "config":
-                    HandleConfig(args);
-                    break;
                 case "exit":
                     HandleExit(args);
                     break;
             }
         }
-    }
-
-    private static void HandleConfig(string[] args)
-    {
-        if (args.Length < 3)
-        {
-            ListConfig();
-            return;
-        }
-
-        var configName = args[2];
-        if (!Plugin.HasConfig(configName))
-        {
-            ErrorFungame("config.not_found", configName);
-            return;
-        }
-
-        if (args.Length == 3)
-        {
-            var current = Plugin.GetConfigValue(configName);
-            if (current is bool boolVal)
-            {
-                var newVal = !boolVal;
-                Plugin.SetConfigValue(configName, newVal);
-                InfoFungame("config.set_success", configName, newVal);
-            }
-            else
-            {
-                ErrorFungame("config.invalid_value", configName, args[3]);
-            }
-
-            return;
-        }
-
-        object newValue = args[3];
-        if (Plugin.SetConfigValue(configName, newValue))
-        {
-            InfoFungame("config.set_success", configName, newValue);
-        }
-        else
-        {
-            ErrorFungame("config.set_failed", configName, newValue);
-        }
-    }
-
-    private static void ListConfig()
-    {
-        Log.Divider();
-        InfoFungame("config.list_header");
-
-        foreach (var kvp in Plugin.ConfigRegistry)
-        {
-            var key = kvp.Key;
-            var value = kvp.Value.BoxedValue;
-            var displayName = Locale($"config.{key}.name");
-            var description = Locale($"config.{key}.description");
-
-            Log.Info($"    {displayName}({key}): {value}", Logger);
-
-            if (!string.IsNullOrEmpty(description) && description != $"config.{key}.description")
-            {
-                Log.Info($"        {description}", Logger);
-            }
-        }
-
-        Log.Divider();
     }
 
     private static void HandleWaypoint(string[] args)
@@ -374,7 +219,6 @@ public class ModCommand : ModCommandBase
 
     private static void HandleSave(string[] args)
     {
-        // fg save as / fg save as XXX
         if (args.Length is 3 or 4 && args[2].Equals("as", StringComparison.OrdinalIgnoreCase))
         {
             var targetName = args.Length == 4 ? args[3] : null;
@@ -388,7 +232,6 @@ public class ModCommand : ModCommandBase
 
         switch (args.Length)
         {
-            // fg save XXX
             case 3 when !args[2].Contains(","):
             {
                 targetPath = ResolveTargetPath(args[2]);
@@ -400,11 +243,9 @@ public class ModCommand : ModCommandBase
 
                 break;
             }
-            // fg save xx,xx
             case 3:
                 ErrorFungame("save.missing_end_position");
                 return;
-            // fg save xx,xx xx,xx XXX
             case 5:
             {
                 targetPath = ResolveTargetPath(args[4]);
@@ -444,7 +285,6 @@ public class ModCommand : ModCommandBase
                 return;
             }
 
-            // fg save / fg save XXX
             FungameDirectoryLoader.SaveToDirectory(fungame, directoryPath);
             FungameLocale.SaveToCurrentLang(fungame, directoryPath);
 
@@ -533,9 +373,6 @@ public class ModCommand : ModCommandBase
         return directPath;
     }
 
-    private const string DefaultVersion = "1.0.0";
-    private static readonly List<string> DefaultAuthor = ["Unknown"];
-
     private static Fungame LoadOrCreateDefaultFungame(string targetPath)
     {
         if (string.IsNullOrWhiteSpace(targetPath))
@@ -544,10 +381,7 @@ public class ModCommand : ModCommandBase
         var targetJsonPath = Path.Combine(targetPath, "fungame.json");
 
         var loaded = TryLoadFungame(targetJsonPath, targetPath);
-        if (loaded != null)
-            return loaded;
-
-        return CreateDefaultFungame(targetPath);
+        return loaded ?? CreateDefaultFungame(targetPath);
     }
 
     private static Fungame TryLoadFungame(string jsonPath, string targetPath)
@@ -618,7 +452,6 @@ public class ModCommand : ModCommandBase
             };
         Logger.LogWarning(BetterLocale.Other("fungame_load.no_folder_name", targetPath));
         return null;
-
     }
 
     private static void SaveAreaAsMapData(Fungame fungame, string directoryPath, string startStr, string endStr)
@@ -628,11 +461,12 @@ public class ModCommand : ModCommandBase
         var startParts = startStr.Split(',');
         var endParts = endStr.Split(',');
 
-        if (startParts.Length != 2 || endParts.Length != 2 ||
-            !float.TryParse(startParts[0].Trim(), out float wx1) ||
-            !float.TryParse(startParts[1].Trim(), out float wy1) ||
-            !float.TryParse(endParts[0].Trim(), out float wx2) ||
-            !float.TryParse(endParts[1].Trim(), out float wy2))
+        if (startParts.Length != 2
+            || endParts.Length != 2
+            || !float.TryParse(startParts[0].Trim(), out var wx1)
+            || !float.TryParse(startParts[1].Trim(), out var wy1)
+            || !float.TryParse(endParts[0].Trim(), out var wx2)
+            || !float.TryParse(endParts[1].Trim(), out var wy2))
         {
             ErrorFungame("save.invalid_position");
             return;
@@ -696,7 +530,7 @@ public class ModCommand : ModCommandBase
             for (var x = 0; x < regionW; x++)
             {
                 var id = blockIds[x][y];
-                chars[x] = blockToChar.TryGetValue(id, out string ch)
+                chars[x] = blockToChar.TryGetValue(id, out var ch)
                     ? ch[0]
                     : '0';
             }
@@ -710,7 +544,6 @@ public class ModCommand : ModCommandBase
             keyDict[EncodeBlockIndex(i)] = (long)uniqueBlockIds[i];
         }
 
-        // Create new level data from scanned blocks, attach to fungame
         var newLevel = fungame.CurrentLevel != null
             ? new LevelData
             {
@@ -732,10 +565,7 @@ public class ModCommand : ModCommandBase
 
         fungame.Levels = [newLevel];
 
-        // Delegate all file writing to SaveToDirectory (handles cleanup, defaults, naming)
         FungameDirectoryLoader.SaveToDirectory(fungame, directoryPath);
-
-        // ������/����/����д�뵱ǰ�����ļ�
         FungameLocale.SaveToCurrentLang(fungame, directoryPath);
 
         InfoFungame("save.area_success",
@@ -836,7 +666,7 @@ public class ModCommand : ModCommandBase
     private static void TeleportToWaypoint(WaypointData waypointData, string displayId)
     {
         InfoFungame("waypoint.teleport", displayId, waypointData.Position);
-        Player.Tp(waypointData.Position);
+        GamePlayer.Tp(waypointData.Position);
     }
 
     private static List<WaypointData> GetWaypoints(Fungame fungame)
@@ -854,17 +684,12 @@ public class ModCommand : ModCommandBase
             return;
         }
 
-        Log.Divider();
-        InfoFungame("waypoint.list_header", waypoints.Count);
+        var header = Fungame("waypoint.list_header", waypoints.Count);
+        var items = waypoints
+            .Select((wp, i) => $"{wp.Id ?? $"waypoint_{i + 1}"}: ({wp.X}, {wp.Y})")
+            .ToList();
 
-        for (var i = 0; i < waypoints.Count; i++)
-        {
-            var wp = waypoints[i];
-            if (wp != null)
-                InfoFungame("waypoint.list_item", i + 1, wp.Id ?? $"waypoint_{i + 1}", wp.Position);
-        }
-
-        Log.Divider();
+        Log.PrintNumberedList(header, items, Logger);
     }
 
     private static void HandleFeature(string[] args)
@@ -893,27 +718,24 @@ public class ModCommand : ModCommandBase
 
     private static void ListFeatures(Fungame fungame)
     {
-        Log.Divider();
-        InfoFungame("feature.list_header");
+        var groups = new List<(string groupName, IList<string> items)>();
 
-        // List WorldSettings features
         var settings = fungame.WorldSettingsData;
         if (settings != null)
         {
             var wsDisplay = Locale("feature.world_settings_data");
-            Log.Info($"    {wsDisplay}(world_settings):", Logger);
-            foreach (var prop in typeof(WorldSettingsData).GetProperties(BindingFlags.Public | BindingFlags.Instance))
-            {
-                if (prop.Name == "Type") continue;
-                if (!IsSimpleType(prop.PropertyType)) continue;
-                var value = prop.GetValue(settings);
-                var jsonName = prop.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName ?? prop.Name;
-                var displayName = Locale($"feature.{GetFeatureDisplayName(jsonName)}");
-                Log.Info($"        {displayName}({jsonName}): {value}", Logger);
-            }
+            var wsItems =
+                (from prop in typeof(WorldSettingsData).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    where prop.Name != "Type"
+                    where IsSimpleType(prop.PropertyType)
+                    let value = prop.GetValue(settings)
+                    let jsonName = prop.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName ?? prop.Name
+                    let displayName = Locale($"feature.{GetFeatureDisplayName(jsonName)}")
+                    select $"{displayName}({jsonName}): {value}").ToList();
+
+            groups.Add(($"{wsDisplay}(world_settings)", wsItems));
         }
 
-        // List feature data objects (MineData, JumpPadData, XpData, etc.)
         var featureDataTypes = new Dictionary<string, object>
         {
             ["mine"] = fungame.MineData,
@@ -932,28 +754,30 @@ public class ModCommand : ModCommandBase
             var displayName = Locale($"feature.{kvp.Key}_data");
             if (value == null)
             {
-                Log.Info($"    {displayName}({kvp.Key}): null", Logger);
+                groups.Add(($"{displayName}({kvp.Key})", ["null"]));
                 continue;
             }
 
-            Log.Info($"    {displayName}({kvp.Key}):", Logger);
-            foreach (var subProp in value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-            {
-                if (subProp.Name == "Type") continue;
-                if (!IsSimpleType(subProp.PropertyType)) continue;
-                var subValue = subProp.GetValue(value);
-                var subJson = subProp.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName ?? subProp.Name;
-                var subDisplay = Locale($"feature.{GetFeatureDisplayName($"{kvp.Key}.{subJson}")}");
-                Log.Info($"        {subDisplay}({subJson}): {subValue}", Logger);
-            }
+            var items = (from subProp in value
+                        .GetType()
+                        .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    where subProp.Name != "Type"
+                    where IsSimpleType(subProp.PropertyType)
+                    let subValue = subProp.GetValue(value)
+                    let subJson = subProp.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName ?? subProp.Name
+                    let subDisplay = Locale($"feature.{GetFeatureDisplayName($"{kvp.Key}.{subJson}")}")
+                    select $"{subDisplay}({subJson}): {subValue}")
+                .ToList();
+            groups.Add(($"{displayName}({kvp.Key})", items));
         }
 
-        Log.Divider();
+        var header = Fungame("feature.list_header");
+        Log.PrintGroupedList(header, groups, Logger);
     }
 
     private static bool IsSimpleType(Type type)
     {
-        return type.IsPrimitive 
+        return type.IsPrimitive
                || type == typeof(string)
                || type == typeof(decimal)
                || type == typeof(float)
@@ -965,13 +789,11 @@ public class ModCommand : ModCommandBase
     {
         var parts = featureName.Split('.');
 
-        // Resolve the target object and property
         object target;
         PropertyInfo targetProp;
 
         if (parts.Length == 1)
         {
-            // Single-part feature name �� toggle data objects (mine, jump_pad, etc.)
             var dataProp = FindFungameFeatureProperty(parts[0]);
             if (dataProp == null)
             {
@@ -979,13 +801,11 @@ public class ModCommand : ModCommandBase
                 return;
             }
 
-            // For data objects (non-simple type), toggle creation/null
             if (!IsSimpleType(dataProp.PropertyType))
             {
                 var current = dataProp.GetValue(fungame);
                 if (current == null)
                 {
-                    // Create new instance
                     var instance = Activator.CreateInstance(dataProp.PropertyType);
                     dataProp.SetValue(fungame, instance);
                     InfoFungame("feature.set_success", featureName, "enabled");
@@ -1004,7 +824,6 @@ public class ModCommand : ModCommandBase
         }
         else
         {
-            // multi-part: e.g. "world_settings.full_bright" or "mine.undestroy"
             var dataProp = FindFungameFeatureProperty(parts[0]);
             if (dataProp == null)
             {
@@ -1116,7 +935,7 @@ public class ModCommand : ModCommandBase
 
         Fungame fungame;
 
-        if (int.TryParse(key, out int index))
+        if (int.TryParse(key, out var index))
         {
             if (index < 1 || index > FungameCheck.Fungames.Count)
             {
@@ -1162,7 +981,7 @@ public class ModCommand : ModCommandBase
     {
         var fungame = FungameCheck.CurrentFungame;
         InfoFungame("spawn", fungame.SpawnPosition);
-        Player.Tp(fungame.SpawnPosition);
+        GamePlayer.Tp(fungame.SpawnPosition);
     }
 
     private static string Locale(string key, params object[] args)
@@ -1198,11 +1017,11 @@ public class ModCommand : ModCommandBase
         Log.Error(message, Logger);
     }
 
-    private static void Info(string key, params object[] args)
-    {
-        var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
-        Log.Info(message, Logger);
-    }
+    // private static void Info(string key, params object[] args)
+    // {
+    //     var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
+    //     Log.Info(message, Logger);
+    // }
 
     private static void Error(string key, params object[] args)
     {
@@ -1210,11 +1029,11 @@ public class ModCommand : ModCommandBase
         Log.Error(message, Logger);
     }
 
-    private static void Warning(string key, params object[] args)
-    {
-        var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
-        Log.Warning(message, Logger);
-    }
+    // private static void Warning(string key, params object[] args)
+    // {
+    //     var message = BetterLocale.Other($"{LocaleKeyPre}{key}", args);
+    //     Log.Warning(message, Logger);
+    // }
 
     private sealed class LeftClickYieldInstruction : CustomYieldInstruction
     {
@@ -1243,5 +1062,3 @@ public class ModCommand : ModCommandBase
         }
     }
 }
-
-

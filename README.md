@@ -1,4 +1,4 @@
-﻿![alt text](Covor.png)
+![alt text](Covor.png)
 
 [中文指南](README_ZH.md)
 
@@ -440,7 +440,7 @@ Configure the player's skill levels and experience when the Fungame loads.
 | `xp_multiple` | `float` | `1.0`   | XP gain multiplier          |
 
 > **Note:** `min_str`/`max_str`, `min_res`/`max_res`, `min_int`/`max_int` (experience thresholds for each level) and
-`exp_str`/`exp_res`/`exp_int` (current experience points) are automatically calculated based on the skill levels, so
+> `exp_str`/`exp_res`/`exp_int` (current experience points) are automatically calculated based on the skill levels, so
 > they don't need to be specified manually.
 
 ### Localization
@@ -475,8 +475,6 @@ When displaying a Fungame's name or description, the system:
 ```
 CustomFungamePack/
 ├── Plugin.cs                       # Main plugin entry point (BepInEx)
-├── Plugin.cs                   # Static config accessors
-├── ModLocale.cs                    # Plugin-wide localization (ModLocaleBase)
 ├── ModCommand.cs                   # fg console command handler
 ├── Fungame.cs                      # Fungame data model
 ├── FungameCheck.cs                 # Fungame directory scanner & initializer
@@ -519,6 +517,7 @@ CustomFungamePack/
 │   ├── SpikeStabberScriptPatch.cs  # Spike stabber Harmony patches
 │   ├── TurretScriptPatch.cs        # Turret Harmony patches
 │   └── WorldGenerationPatch.cs     # World generation Harmony patches (core)
+├── Directory.Build.props.example   # Developer config template
 ├── Logo.png                        # Plugin logo
 ├── Covor.png                       # Cover image
 ├── CustomFungamePack.csproj        # Project file
@@ -531,30 +530,27 @@ CustomFungamePack/
 
 ---
 
----
-
 ## Changelog
 
-### v1.2.0 — Real-time Progress Display & Configurable Update Interval
+### v1.2.0 — Dependency Migration
 
-- **Real-time progress display**: Converted synchronous block placement to coroutine-based async placement, allowing the
-  loading screen to display real-time progress percentage during map generation.
-- **Configurable update interval**: Added [`progress_update_interval`](#config-options) config option (default: `30`) to
-  control the number of blocks placed between progress text updates (lower = more frequent updates).
-- **Bug fixes**:
-    - Fixed blocks appearing transparent after entering the world — added [
-      `WorldGeneration.UpdateWorld()`](Patch/WorldGenerationPatch.cs) to refresh chunk visuals.
-    - Fixed `fg reload` and `fg exit` commands not responding during Fungame loading — added `generatingWorld = false`
-      in cleanup phase ([`WorldGenerationPatch.cs`](Patch/WorldGenerationPatch.cs)).
-    - Fixed progress display showing 100% before any blocks were placed — added safety checks in [
-      `RefreshLoadingText()`](Patch/WorldGenerationPatch.cs) for division-by-zero and proper initialization order.
+- Migrated to [CUCoreLib](https://github.com/jimmyking9999999/CUCoreLib) and [Bark](https://github.com/CNCUMC/Bark) as dependencies
+- Removed MossLib dependency
+- Configuration system migrated to CUCoreLib ModOptionsRegistry (settings now appear in the game's native options menu)
+- Localization system migrated to CUCoreLib LocaleRegistry + Bark.Tool.BetterLocale
+- ModCommand refactored to use CUCoreLib ConsoleCommandRegistry instead of Bark.Base.ModCommandBase
+- Added `Directory.Build.props.example` as a developer configuration template
+- Bug fixes:
+    - Fixed high strength XP causing excessive recoil when hitting blocks
+    - Fixed game freeze when XP reaches maximum value
+    - Fixed missing translation keys for XpData child properties
 
 ### v1.0.1 — Bug fixes and locale improvements
 
 - Added locale entries for config options across all languages.
 - General bug fixes and stability improvements.
 
-### v1.0.1 — Fungame Save System
+### v1.0.0 — Fungame Save System
 
 - Added `fg save` and `fg save as` commands.
 - Introduced `BuildModeSave` and `CustomStructures` content types.

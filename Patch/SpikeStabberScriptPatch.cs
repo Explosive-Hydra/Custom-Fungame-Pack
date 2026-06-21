@@ -91,7 +91,7 @@ public class SpikeStabberScriptPatch
 
         if (!instance || !WorldGeneration.world) yield break;
 
-        World.PlaceItem(instance.transform.position, "spikestabber");
+        GameWorld.PlaceItem(instance.transform.position, "spikestabber");
 
         Object.Destroy(instance.gameObject);
     }

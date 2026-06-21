@@ -145,7 +145,7 @@ public static class WorldGenerationPatch
             if (main != null && main.body != null
                              && (main.body.transform.position.y <= mapBottom
                                  || main.transform.position.y <= mapBottom))
-                Player.Tp(new Vector2(main.transform.position.x, mapTop));
+                GamePlayer.Tp(new Vector2(main.transform.position.x, mapTop));
         }
 
         Physics2D.gravity = new Vector2(0, settings.Gravity);
@@ -161,9 +161,6 @@ public static class WorldGenerationPatch
         MoreLogs("scene_type_set", __instance.biomeOverride);
     }
 
-    /// <summary>
-    ///     强制立即更新加载文本（用于同步操作期间，Update() 不会触发的情况）
-    /// </summary>
     internal static void RefreshLoadingText()
     {
         if (WorldGeneration == null || CurrentFungame == null) return;
@@ -202,7 +199,7 @@ public static class WorldGenerationPatch
         RefreshLoadingText();
     }
 
-    private static void SetPhase(string phaseKey, string arg = "")
+    private static void SetPhase(string phaseKey, string arg)
     {
         _generationPhase = phaseKey;
         _phaseArg = arg;
@@ -327,10 +324,10 @@ public static class WorldGenerationPatch
             var authorInfo = FungameLocale.GetFormattedAuthor(fungame);
             var description = FungameLocale.GetDescription(fungame);
 
-            Player.Alert($"{modInfo}\n{authorInfo}", true);
-            Player.Alert(description, false, 6f);
+            GamePlayer.Alert($"{modInfo}\n{authorInfo}", true);
+            GamePlayer.Alert(description, false, 6f);
             MapLoader.LogMapInfo();
-            Player.Tp(fungame.SpawnPosition);
+            GamePlayer.Tp(fungame.SpawnPosition);
         }
 
         if (hasCustomStructures)
