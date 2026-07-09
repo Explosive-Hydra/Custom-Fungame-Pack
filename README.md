@@ -1,3 +1,7 @@
+# This project is no longer in develop, please use the [Custom Map](https://github.com/CNCUMC/Custom-Map)
+# This project is no longer in develop, please use the [Custom Map](https://github.com/CNCUMC/Custom-Map)
+# This project is no longer in develop, please use the [Custom Map](https://github.com/CNCUMC/Custom-Map)
+
 ![alt text](Covor.png)
 
 [中文指南](README_ZH.md)
