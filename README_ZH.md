@@ -1,3 +1,7 @@
+# 该项目已不再开发，请使用[自定义地图](https://github.com/CNCUMC/Custom-Map)。
+# 该项目已不再开发，请使用[自定义地图](https://github.com/CNCUMC/Custom-Map)。
+# 该项目已不再开发，请使用[自定义地图](https://github.com/CNCUMC/Custom-Map)。
+
 ![alt text](Covor.png)
 
 [English Guide](README.md)
